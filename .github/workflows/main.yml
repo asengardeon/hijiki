@@ -44,4 +44,4 @@ jobs:
       run: |
         pipenv run python setup.py sdist
         pipenv run python pip install twine
-        pipenv run python twine upload --repository pypi dist/*
+        twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
