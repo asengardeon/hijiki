@@ -2,13 +2,6 @@ import os
 import unittest
 
 from hijiki.broker.broker_data import get_broker_url, BROKER_SERVER, BROKER_USERNAME, BROKER_PWD, BROKER_PORT
-from hijiki.hijiki import add
-
-
-#server = os.environ["BROKER_SERVER"] if "BROKER_SERVER" in os.environ else None
-#    username = os.environ["BROKER_USERNAME"] if "BROKER_USERNAME" in os.environ else None
-#    pwd = os.environ["BROKER_PWD"] if "BROKER_PWD" in os.environ else None
-#    port = os.environ["BROKER_PORT"] if "BROKER_PORT" in os.environ else "5672"
 
 class TestMyModule(unittest.TestCase):
 
