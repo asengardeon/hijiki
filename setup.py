@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="hijiki",
-    version="0.1.7",
+    version="0.1.8",
     description="Python Rabbit wrapper library to simplify to use Exchanges and Queues with decorators",
     author="Leandro Vilson Battisti",
     keywords=['Celery', 'Kombu', 'RabbitMQ', 'decorator'],
