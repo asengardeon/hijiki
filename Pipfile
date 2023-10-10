@@ -6,5 +6,8 @@ name = "pypi"
 [packages]
 celery = "5.3.4"
 twine = "*"
+"testcontainers.rabbitmq" = "*"
+urllib3 = "<2.0"
+testcontainers-core = "*"
 
 [dev-packages]

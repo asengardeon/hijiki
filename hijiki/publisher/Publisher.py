@@ -5,8 +5,8 @@ from hijiki.broker.hijiki_broker import HijikiBroker
 
 class Publisher():
 
-    def __init__(self):
-        self.client = HijikiBroker('client')
+    def __init__(self, host, username, password, port):
+        self.client = HijikiBroker('client', host, username, password, port)
 
     def publish_message(self, event_name: str, data: str):
         payload = {"value": data}

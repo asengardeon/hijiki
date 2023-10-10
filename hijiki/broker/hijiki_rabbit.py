@@ -7,8 +7,6 @@ from kombu.common import logger
 from hijiki.broker.hijiki_broker import HijikiBroker
 from hijiki.decorator.worker import Worker
 
-broker = HijikiBroker('worker')
-
 class HijikiQueueExchange():
     def __init__(self, name, exchange_name):
         self.name = name
@@ -19,10 +17,30 @@ class HijikiRabbit():
     queues = {}
     callbacks = {}
     _prefix = ""
-    def __init__(self, queue_exchanges: List[HijikiQueueExchange]):
-        self.connection = broker.get_celery_broker().broker_connection()
+    def with_queues_exchange(self, queue_exchanges: List[HijikiQueueExchange]):
         self.queue_exchanges = queue_exchanges
+        return self
+
+    def with_username(self, username: str):
+        self.username = username
+        return self
+
+    def with_password(self, password: str):
+        self.password = password
+        return self
+    def with_host(self, host: str):
+        self.host = host
+        return self
+
+    def with_port(self, port: str):
+        self.port = port
+        return self
+
+    def build(self):
+        self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port)
+        self.connection = self.broker.get_celery_broker().broker_connection()
         self.init_queues()
+        return self
 
     def init_queues(self, ):
         for q in self.queue_exchanges:
