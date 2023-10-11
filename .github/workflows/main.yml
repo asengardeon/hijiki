@@ -38,7 +38,7 @@ jobs:
       run: echo "{VERSION_NUMBER}={1.0.${{github.run_number}}}" >> $GITHUB_OUTPUT
     - name: Update version in setup.py
       run: >-
-        sed -i "s/{{VERSION_PLACEHOLDER}}/${{ steps.tag.outputs.VERSION_NUMBER }}/g" setup.py
+        sed -e "s/{{VERSION_PLACEHOLDER}}/${{ steps.tag.outputs.VERSION_NUMBER }}/g" setup.py
     - name: Run tests
       run: pipenv run python -m unittest discover tests
     - name: Build Source and Wheel Distributions
