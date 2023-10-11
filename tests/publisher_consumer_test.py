@@ -34,6 +34,11 @@ class Runner():
         threads.append(t)
         t.start()
 
+    def __del__(self):
+        self.gr.close()
+        super()
+
+
 class TestPublisherConsumer(unittest.TestCase):
     runner = None
     def setUp(self):
