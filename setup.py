@@ -7,4 +7,6 @@ setup(
     author="Leandro Vilson Battisti",
     keywords=['Celery', 'Kombu', 'RabbitMQ', 'decorator'],
     packages=find_packages(),
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
 )
