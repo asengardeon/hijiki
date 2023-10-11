@@ -36,24 +36,9 @@ jobs:
 
     - name: Run tests
       run: pipenv run python -m unittest discover tests
-
-    #- name: Publish to PyPI
-    #  env:
-    #    TWINE_USERNAME: __token__
-    #    TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-    #  run: |
-    #    pipenv run python setup.py sdist
-    #    pipenv install twine
-    #    pipenv run twine upload --repository pypi dist/*
     - name: Build Source and Wheel Distributions
       run: |
         pipenv run python setup.py sdist bdist_wheel
-    - name: Publish Distribution to Test PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_TOKEN }}
-        repository_url: https://test.pypi.org/legacy/
-        skip_existing: true
     - name: Publish Distribution to PyPI
       if: startsWith(github.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@release/v1
