@@ -39,7 +39,7 @@ jobs:
     - name: Update version in setup.py
       run: >-
         echo 'version is ${{ steps.version_number.outputs.VERSION_NUMBER }}' &&
-        sed -i 's/{{VERSION_PLACEHOLDER}}/${{github.run_number}}/g' setup.py
+        sed -i 's/{{VERSION_PLACEHOLDER}}/1.0.${{github.run_number}}/g' setup.py
     - name: Run tests
       run: pipenv run python -m unittest discover tests
     - name: Build Source and Wheel Distributions
