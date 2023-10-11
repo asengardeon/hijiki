@@ -35,10 +35,11 @@ jobs:
       shell: bash
     - name: Extract version number
       id: version_number
-      run: echo ::set-output name=VERSION_NUMBER::$(echo 1.0.$BUILD_NUMBER | cut -d / -f 3)
+      run: echo ::set-output name=VERSION_NUMBER::$(echo 1.0.$BUILD_NUMBER | cut -d / -f 3) |
+           echo "{VERSION_NUMBER}={1.0.$BUILD_NUMBER}" >> $GITHUB_OUTPUT
     - name: Update version in setup.py
       run: >-
-        sed -i "s/{{VERSION_PLACEHOLDER}}/${{ steps.tag.outputs.TAG_NAME }}/g" setup.py
+        sed -i "s/{{VERSION_PLACEHOLDER}}/${{ steps.tag.outputs.VERSION_NUMBER }}/g" setup.py
     - name: Run tests
       run: pipenv run python -m unittest discover tests
     - name: Build Source and Wheel Distributions
