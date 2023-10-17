@@ -2,19 +2,25 @@ import threading
 import time
 import unittest
 
-from testcontainers.rabbitmq import RabbitMqContainer
+from testcontainers.core.container import DockerContainer
 
 from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
 from hijiki.publisher.Publisher import Publisher
 
 result_event_list = []
+container = (DockerContainer("rabbitmq:3-management-alpine") \
+    .with_bind_ports(15672, 15672) \
+    .with_bind_ports(5672, 5672) \
+    .with_name("rabbit_test_container") \
+    .with_env("RABBITMQ_DEFAULT_USER", "rabbitmq") \
+    .with_env("RABBITMQ_DEFAULT_PASS", "rabbitmq").start())
 class Runner():
 
     qs = [HijikiQueueExchange('teste1', 'teste1_event'), HijikiQueueExchange('teste2', 'teste2_event')]
     gr = HijikiRabbit().with_queues_exchange(qs) \
         .with_username("rabbitmq") \
         .with_password("rabbitmq") \
-        .with_host("localhost") \
+        .with_host(container.get_container_host_ip()) \
         .with_port(5672) \
         .build()
     @gr.task(queue_name="teste1")
