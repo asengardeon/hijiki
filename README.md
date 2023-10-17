@@ -27,7 +27,12 @@ Consumer uses a configuration to define QUEUES and Exchanges and the consumer is
 from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
 
 qs = [HijikiQueueExchange('teste1', 'teste1_event'), HijikiQueueExchange('teste2', 'teste2_event')]
-gr = HijikiRabbit(qs)
+gr = HijikiRabbit().with_queues_exchange(qs) \
+    .with_username("rabbitmq") \
+    .with_password("rabbitmq") \
+    .with_host("localhost") \
+    .with_port(5672) \
+    .build()
 
 class MyConsumer():
     @gr.task(queue_name='teste1')
