@@ -41,7 +41,7 @@ jobs:
         echo 'version is ${{ steps.version_number.outputs.VERSION_NUMBER }}' &&
         sed -i 's/{{VERSION_PLACEHOLDER}}/1.0.${{github.run_number}}/g' setup.py
     - name: Set up environment
-      run: docker compose -f docker-compose.yml up -d
+      run: docker compose -f ../docker-compose.yml up -d
     - name: Wait for docker to finish building
       run: sleep 30
     - name: Run tests
