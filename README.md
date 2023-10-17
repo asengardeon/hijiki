@@ -16,7 +16,7 @@ If server is not present the connection url will be a default, and to others con
 The example demonstrate how to publish a simple message to topic "teste1_event" with a json message:
 
 ```python
-pub = Publisher()
+pub = Publisher("localhost", "rabbitmq", "rabbitmq", 5672)
 pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
 ```
 
