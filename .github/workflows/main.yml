@@ -1,4 +1,4 @@
-name: Publish to PyPI
+name: Main pipeline
 
 on:
   push:
@@ -49,3 +49,4 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_TOKEN }}
+        #teste
