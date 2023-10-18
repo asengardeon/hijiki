@@ -1,0 +1,40 @@
+name: Publish to PyPI
+
+on:
+  pull_request:
+    branches:
+      - 'fix/**'
+      - 'feature/**'
+      - 'chore/**'
+      - 'doc/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps: 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+
+    - name: Install pipenv
+      run: |
+        curl https://pyenv.run | bash
+      shell: bash
+
+    - name: Install pipenv
+      run: |
+        pip install pipenv
+      shell: bash
+
+    - name: Install dependencies with pipenv
+      run: |
+        pipenv install --deploy --ignore-pipfile
+        pipenv install setuptools
+      shell: bash
+    - name: Run tests
+      run: pipenv run python -m unittest discover tests
