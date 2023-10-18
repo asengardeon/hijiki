@@ -9,5 +9,6 @@ twine = "*"
 "testcontainers.rabbitmq" = "*"
 urllib3 = "<2.0"
 testcontainers-core = "*"
+coverage = "*"
 
 [dev-packages]

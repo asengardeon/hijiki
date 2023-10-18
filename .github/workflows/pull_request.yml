@@ -38,4 +38,8 @@ jobs:
         pipenv install setuptools
       shell: bash
     - name: Run tests
-      run: pipenv run python -m unittest discover tests
+      run: pipenv run python -m coverage run -m unittest discover tests
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

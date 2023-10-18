@@ -41,7 +41,7 @@ jobs:
         echo 'version is ${{ steps.version_number.outputs.VERSION_NUMBER }}' &&
         sed -i 's/{{VERSION_PLACEHOLDER}}/1.0.${{github.run_number}}/g' setup.py
     - name: Run tests
-      run: pipenv run python -m unittest discover tests
+      run: pipenv run python -m coverage run -m unittest discover tests
     - name: Build Source and Wheel Distributions
       run: |
         pipenv run python setup.py sdist bdist_wheel
