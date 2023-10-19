@@ -48,7 +48,9 @@ jobs:
     - name: Start containers
       run: ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
     - name: Run tests
-      run: pipenv run python -m coverage run -m unittest discover tests
+      run: pipenv run python -m coverage run unittest tests/**
+    - name: generate xml coverage
+      run: pipenv run python -m coverage xml
     - name: Build Source and Wheel Distributions
       run: |
         pipenv run python setup.py sdist bdist_wheel
