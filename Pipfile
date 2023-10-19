@@ -5,10 +5,9 @@ name = "pypi"
 
 [packages]
 celery = "5.3.4"
-twine = "*"
-"testcontainers.rabbitmq" = "*"
 urllib3 = "<2.0"
-testcontainers-core = "*"
-coverage = "*"
 
 [dev-packages]
+twine = "==4.0.2"
+testcontainers-core = "==0.0.1rc1"
+coverage = "==7.3.2"
