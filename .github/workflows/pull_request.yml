@@ -35,13 +35,16 @@ jobs:
       run: |
         pipenv install --deploy --ignore-pipfile
         pipenv install setuptools
-      shell: bash
+
     - name: Install Compose
       uses: ndeloof/install-compose-action@v0.0.1
       with:
         version: v2.1.0 # defaults to 'latest'
         legacy: true    # will also install in PATH as `docker-compose`
         run: docker-compose --version
+#    - name: Start containers
+#      run: docker run  -d -e RABBITMQ_DEFAULT_USER=rabbitmq -e RABBITMQ_DEFAULT_PASS=rabbitmq -p 15672:15672 -p 5672:5672 --name rabbit-test  rabbitmq:3-management
+#      shell: bash
     - name: Start containers
       run: ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
     - name: Run tests
@@ -50,5 +53,10 @@ jobs:
       uses: codecov/codecov-action@v3
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+#    - name: Stop containers
+#      if: always()
+#      run: docker rm rabbit-test
+#      shell: bash
     - name: Stop containers
+      if: always()
       run: ~/.docker/cli-plugins/docker-compose down

@@ -17,6 +17,13 @@ class HijikiRabbit():
     queues = {}
     callbacks = {}
     _prefix = ""
+
+    def __init__(self):
+        self.worker = None
+
+    def terminate(self):
+        self.worker.should_stop = True
+
     def with_queues_exchange(self, queue_exchanges: List[HijikiQueueExchange]):
         self.queue_exchanges = queue_exchanges
         return self
@@ -117,7 +124,7 @@ class HijikiRabbit():
 
     def run(self):
         try:
-            worker = Worker(self.connection, self)
-            worker.run()
+            self.worker = Worker(self.connection, self)
+            self.worker.run()
         except KeyboardInterrupt:
             print('bye bye')
