@@ -57,6 +57,7 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - name: Stop containers
+      if: always()
       run: ~/.docker/cli-plugins/docker-compose down
     - name: Publish Distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
