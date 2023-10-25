@@ -2,8 +2,6 @@ import threading
 import time
 import unittest
 
-from testcontainers.core.container import DockerContainer
-
 from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
 from hijiki.publisher.Publisher import Publisher
 
@@ -22,8 +20,8 @@ class Runner():
     threads = []
 
     @gr.task(queue_name="teste1")
-    def internal_consumer(self):
-        print("consumiu")
+    def internal_consumer(data):
+        print(f"consumiu o valor:{data}")
         result_event_list.append('recebeu evento')
 
     def run(self):
@@ -42,6 +40,7 @@ class TestPublisherConsumer(unittest.TestCase):
     runner = None
 
     def setUp(self):
+        result_event_list = []
         self.runner = Runner()
         self.runner.run()
         self.pub = Publisher("localhost", "user", "pwd", 5672)

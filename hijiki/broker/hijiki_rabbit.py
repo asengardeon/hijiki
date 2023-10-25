@@ -1,4 +1,4 @@
-from functools import wraps, partial
+from functools import wraps, partial, partialmethod
 from typing import List
 
 from kombu import Queue, Exchange
