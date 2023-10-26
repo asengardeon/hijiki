@@ -36,12 +36,12 @@ gr = HijikiRabbit().with_queues_exchange(qs) \
 
 class MyConsumer():
     @gr.task(queue_name='teste1')
-    def my_consumer(self):
-        print("consumer 1 executed")
+    def my_consumer(data):
+        print(f"consumer 1 executed with data : {data}")
 
     @gr.task(queue_name='teste2')
-    def my_consumer2(self):
-        print("consumer 2 executed")
+    def my_consumer2(data):
+        print(f"consumer 2  executed with data : {data}")
 
 if __name__ == '__main__':
     MyConsumer()
