@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies with pipenv
       run: |
         pipenv install --deploy --ignore-pipfile
-        pipenv install setuptools
+        pipenv install wheel setuptools
       shell: bash
     - name: Extract version number
       id: version_number
