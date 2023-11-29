@@ -9,4 +9,8 @@ setup(
     packages=find_packages(),
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
+    install_requires=[
+        "celery==5.3.4",
+        "urllib3<2.0"
+    ],
 )
