@@ -28,6 +28,7 @@ class HijikiRabbit():
         self.username = None
         self.queue_exchanges = None
         self.worker = None
+        self.port = None
 
     def terminate(self):
         self.worker.should_stop = True

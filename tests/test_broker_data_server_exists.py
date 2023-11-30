@@ -26,17 +26,14 @@ class TestMyModule(unittest.TestCase):
         self.assertEqual(get_broker_url(), 'amqp://None:None@teste:5672')
 
     def test_broker_server_env_exists_in_environment_variable(self):
-        self.assertEqual(get_broker_url(), 'amqp://None:None@teste:5672')
-
-    def test_broker_server_env_exists_in_environment_variable(self):
-        self.assertEqual(get_broker_url(), 'amqp://None:None@teste:5672')
+        self.assertEqual('amqp://None:None@teste:5672', get_broker_url())
 
     def test_alldata_env_exists_in_environment_variable(self):
         os.environ[BROKER_SERVER] = 'server'
         os.environ[BROKER_USERNAME] = 'usr'
         os.environ[BROKER_PWD] = 'password'
         os.environ[BROKER_PORT] = '5427'
-        self.assertEqual(get_broker_url(), 'amqp://usr:password@server:5427')
+        self.assertEqual( 'amqp://usr:password@server:5427', get_broker_url())
 
 
     def test_broker_cluster_server_env_exists_in_environment_variable(self):
