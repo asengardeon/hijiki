@@ -1,4 +1,4 @@
-from functools import wraps, partial, partialmethod
+from functools import wraps, partial
 from typing import List
 
 from kombu import Queue, Exchange
@@ -7,19 +7,28 @@ from kombu.common import logger
 from hijiki.broker.hijiki_broker import HijikiBroker
 from hijiki.decorator.worker import Worker
 
+
 class HijikiQueueExchange():
     def __init__(self, name, exchange_name):
         self.name = name
         self.exchange_name = exchange_name
 
-class HijikiRabbit():
 
+class HijikiRabbit():
     queues = {}
     callbacks = {}
     _prefix = ""
 
     def __init__(self):
+        self.connection = None
+        self.broker = None
+        self.host = None
+        self.cluster_hosts = None
+        self.password = None
+        self.username = None
+        self.queue_exchanges = None
         self.worker = None
+        self.port = None
 
     def terminate(self):
         self.worker.should_stop = True
@@ -35,8 +44,13 @@ class HijikiRabbit():
     def with_password(self, password: str):
         self.password = password
         return self
+
     def with_host(self, host: str):
         self.host = host
+        return self
+
+    def with_cluster_hosts(self, hosts: str):
+        self.cluster_hosts = hosts
         return self
 
     def with_port(self, port: str):
@@ -44,7 +58,7 @@ class HijikiRabbit():
         return self
 
     def build(self):
-        self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port)
+        self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port, self.cluster_hosts)
         self.connection = self.broker.get_celery_broker().broker_connection()
         self.init_queues()
         return self
@@ -66,19 +80,19 @@ class HijikiRabbit():
             queue = Queue(name,
                           task_exchange,
                           routing_key=routing_key,
-                          queue_arguments={'x-queue-type': 'quorum','x-dead-letter-exchange': f'{q.exchange_name}_dlq', 'x-delivery-limit': 10})
+                          queue_arguments={'x-queue-type': 'quorum', 'x-dead-letter-exchange': f'{q.exchange_name}_dlq',
+                                           'x-delivery-limit': 10})
 
             queue.bind(self.connection).declare()
 
             queue_dlq = Queue(f'{name}_dlq',
-                          task_exchange_dlq,
-                          routing_key=routing_key,
-                          queue_arguments={'x-queue-type': 'quorum'})
+                              task_exchange_dlq,
+                              routing_key=routing_key,
+                              queue_arguments={'x-queue-type': 'quorum'})
 
             queue_dlq.bind(self.connection).declare()
 
             self.queues[name].append(queue)
-
 
     def _wrap_function(self, function, callback, queue_name, task=False):
 
@@ -93,7 +107,9 @@ class HijikiRabbit():
             @wraps(func)
             def wrapper(*args, **kwargs):
                 pass
+
             return wrapper
+
         return decorate
 
     def task(self, func=None, *, queue_name=None):
@@ -120,7 +136,6 @@ class HijikiRabbit():
 
         return self._wrap_function(
             func, process_message, queue_name, task=True)
-
 
     def run(self):
         try:

@@ -4,12 +4,35 @@ Python Rabbit wrapper library to simplify to use Exchanges and Queues with decor
 ## Configurations
 Hijiki uses environment variables to configure connection with BROKER. 
 
-- BROKER_PORT
+### COMMON
 - BROKER_PWD
 - BROKER_USERNAME
+
+### For single server
+- BROKER_PORT
 - BROKER_SERVER
 
-If server is not present the connection url will be a default, and to others configs will be changed for "teste".
+### For cluster server
+- BROKER_CLUSTER_SERVER
+
+if BROKER_CLUSTER_SERVER is present the priority is generate URI using this list of servers, and not use the sever for single server. 
+To user multiples server from cluster is necessary this environment variable has a list of server with port separates with comma. 
+
+Ex: 
+```
+serverA:5672,serverB:5673
+
+```
+generating for uri connection string the value above
+
+``
+amqp://usr:password@server:5672;amqp://usr:password@serverB:5672;
+``
+
+The user and password is the same for all servers.
+
+
+If server is not present, even BROKER_CLUSTER_SERVER, the connection url will be a default, and to others configs will be changed for "teste".
 
 ## How to use
 ### Publisher
