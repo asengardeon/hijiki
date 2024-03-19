@@ -23,7 +23,7 @@ class HijikiRabbit():
         self.connection = None
         self.broker = None
         self.host = None
-        self.cluster_hosts = None
+        self.cluster_hosts = []
         self.password = None
         self.username = None
         self.queue_exchanges = None
@@ -50,7 +50,7 @@ class HijikiRabbit():
         return self
 
     def with_cluster_hosts(self, hosts: str):
-        self.cluster_hosts = hosts
+        self.cluster_hosts.append(hosts)
         return self
 
     def with_port(self, port: str):
@@ -128,8 +128,9 @@ class HijikiRabbit():
                                                  body))
             try:
                 func(body)
-            except Exception:
+            except Exception as e:
                 logger.error("Problem processing task", exc_info=True)
+                message.requeue()
             else:
                 logger.debug("Ack'ing message.")
                 message.ack()

@@ -5,7 +5,8 @@ from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
 result_event_list = []
 
 class Runner():
-    qs = [HijikiQueueExchange('teste1', 'teste1_event'), HijikiQueueExchange('teste2', 'teste2_event')]
+    qs = [HijikiQueueExchange('teste1', 'teste1_event'),
+          HijikiQueueExchange('fila_erro', 'erro_event')]
     gr = HijikiRabbit().with_queues_exchange(qs) \
         .with_username("user") \
         .with_password("pwd") \
@@ -19,6 +20,12 @@ class Runner():
     def internal_consumer(data):
         print(f"consumiu o valor:{data}")
         result_event_list.append('recebeu evento')
+
+    @gr.task(queue_name="fila_erro")
+    def internal_consumer(data):
+        print(f"consumiu o valor:{data}")
+        result_event_list.append('recebeu evento')
+        raise Exception("falhou")
 
     def run(self):
         t = threading.Thread(target=self.gr.run)
