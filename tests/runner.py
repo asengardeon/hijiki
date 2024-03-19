@@ -38,5 +38,8 @@ class Runner():
     def __del__(self):
         super()
 
+    def clear_results(self):
+        result_event_list.clear()
+
     def get_results(self):
         return result_event_list
