@@ -25,7 +25,6 @@ class TestPublisherConsumer(unittest.TestCase):
 
     def test_consume_a_message(self):
         self.runner.clear_results()
-        self.pub = Publisher("localhost", "user", "pwd", 5672)
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
@@ -33,7 +32,6 @@ class TestPublisherConsumer(unittest.TestCase):
 
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
-        self.pub = Publisher("localhost", "user", "pwd", 5672)
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.pub.publish_message('erro_event', '{"value": "Esta é a mensagem"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
