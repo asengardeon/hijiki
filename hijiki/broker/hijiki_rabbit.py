@@ -68,8 +68,10 @@ class HijikiRabbit():
             name = q.name
             if name not in self.queues:
                 self.queues[name] = []
+                self.queues[name+ "_dlq"] = []
             if name not in self.callbacks:
                 self.callbacks[name] = []
+                self.callbacks[name + "_dlq"] = []
 
             logger.debug("Setting up %s" % name)
             routing_key = "*"
@@ -93,6 +95,7 @@ class HijikiRabbit():
             queue_dlq.bind(self.connection).declare()
 
             self.queues[name].append(queue)
+            self.queues[name + "_dlq"].append(queue_dlq)
 
     def _wrap_function(self, function, callback, queue_name, task=False):
 
