@@ -15,6 +15,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.runner = Runner()
         self.runner.run()
         self.pub = Publisher("localhost", "user", "pwd", 5672)
+        self.NUMBER_OF_QUEUED_MESSAGES = 1
 
     def tearDown(self):
         self.runner.stop()
@@ -36,5 +37,31 @@ class TestPublisherConsumer(unittest.TestCase):
         self.pub.publish_message('erro_event', '{"value": "Esta é a mensagem"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(DLQ_RETRY_NUMBER, len(self.runner.get_results()))
+
+    def test_consume_a_message_dlq(self):
+        self.runner.clear_results()
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
+            self.pub.publish_message(
+                'erro_event',
+                f'{{"value": "Esta é a mensagem número {number} que vai cair na dlq"}}'
+            )
+
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(self.NUMBER_OF_QUEUED_MESSAGES, len(self.runner.get_results_dlq()))
+    
+    def test_consume_a_message_without_consumer_dlq(self):
+        self.runner.clear_results()
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
+            self.pub.publish_message(
+                'without_dlq',
+                '{"value": "Esta é a mensagem que irá cair numa fila dlq, que não tem consumer"}'
+            )
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(
+            self.NUMBER_OF_QUEUED_MESSAGES * DLQ_RETRY_NUMBER,
+            len(self.runner.get_results())
+        )
 
 
