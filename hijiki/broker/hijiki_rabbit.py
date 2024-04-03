@@ -98,7 +98,7 @@ class HijikiRabbit():
             self.queues[name + "_dlq"].append(queue_dlq)
 
     def _wrap_function(self, function, callback, queue_name, task=False):
-
+        
         self.callbacks[queue_name].append(callback)
 
         # The function returned by the decorator don't really do
@@ -142,6 +142,16 @@ class HijikiRabbit():
             func, process_message, queue_name, task=True)
 
     def run(self):
+        consumers_without_callbacks = [
+            key 
+            for (key, callbacks) in self.callbacks.items()
+            if not callbacks
+        ]
+
+        for key in consumers_without_callbacks:
+            self.callbacks.pop(key)
+            self.queues.pop(key)
+
         try:
             self.worker = Worker(self.connection, self)
             self.worker.run()
