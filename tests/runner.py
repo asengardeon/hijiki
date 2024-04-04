@@ -23,28 +23,28 @@ class Runner():
     @gr.task(queue_name="teste1")
     def internal_consumer(data):
         print(f"consumiu o valor:{data}")
-        result_event_list.append('recebeu evento')
+        result_event_list.append('received event')
     
     @gr.task(queue_name="teste1_dlq")
     def internal_consumer_dlq(data):
         print(f"consumiu o valor:{data}")
-        result_event_list_dlq.append('recebeu evento')
+        result_event_list_dlq.append('received event')
 
     @gr.task(queue_name="fila_erro")
     def internal_consumer_erro(data):
         print(f"consumiu o valor:{data}")
-        result_event_list.append('recebeu evento')
+        result_event_list.append('received event')
         raise Exception("falhou")
 
     @gr.task(queue_name="fila_erro_dlq")
     def internal_consumer_erro_dlq(data):
         print(f"consumiu o valor:{data}")
-        result_event_list_dlq.append('recebeu evento')
+        result_event_list_dlq.append('received event')
     
     @gr.task(queue_name="without_dlq")
     def internal_consumer_extra(data):
         print(f"consumiu o valor:{data}")
-        result_event_list.append('recebeu evento')
+        result_event_list.append('received event')
         raise Exception("falhou")
 
 
