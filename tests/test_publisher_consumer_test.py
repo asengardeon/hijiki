@@ -15,7 +15,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.runner = Runner()
         self.runner.run()
         self.pub = Publisher("localhost", "user", "pwd", 5672)
-        self.NUMBER_OF_QUEUED_MESSAGES = 1
+        self.NUMBER_OF_QUEUED_MESSAGES = 2
 
     def tearDown(self):
         self.runner.stop()
