@@ -22,19 +22,19 @@ class TestPublisherConsumer(unittest.TestCase):
 
     def test_publish_a_message(self):
         self.runner.clear_results()
-        self.pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
 
     def test_consume_a_message(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(len(self.runner.get_results()), 1)
 
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.pub.publish_message('erro_event', '{"value": "Esta é a mensagem"}')
+        self.pub.publish_message('erro_event', '{"value": "This is the message"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(DLQ_RETRY_NUMBER, len(self.runner.get_results()))
 
@@ -44,7 +44,7 @@ class TestPublisherConsumer(unittest.TestCase):
         for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
             self.pub.publish_message(
                 'erro_event',
-                f'{{"value": "Esta é a mensagem número {number} que vai cair na dlq"}}'
+                f'{{"value": "This is message number {number} that will be sent to dlq"}}'
             )
 
         time.sleep(SECS_TO_AWAIT_BROKER)
@@ -56,7 +56,7 @@ class TestPublisherConsumer(unittest.TestCase):
         for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
             self.pub.publish_message(
                 'without_dlq',
-                '{"value": "Esta é a mensagem que irá cair numa fila dlq, que não tem consumer"}'
+                '{"value": "This is the message that will fall into a dlq queue, which has no consumer"}'
             )
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(
