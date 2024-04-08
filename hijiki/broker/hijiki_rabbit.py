@@ -23,7 +23,7 @@ class HijikiRabbit():
         self.connection = None
         self.broker = None
         self.host = None
-        self.cluster_hosts = []
+        self.cluster_hosts = None
         self.password = None
         self.username = None
         self.queue_exchanges = None
@@ -50,12 +50,15 @@ class HijikiRabbit():
         return self
 
     def with_cluster_hosts(self, hosts: str):
-        self.cluster_hosts.append(hosts)
+        self.cluster_hosts = hosts
         return self
 
     def with_port(self, port: str):
         self.port = port
         return self
+
+    def ping(self):
+        return self.broker.ping()
 
     def build(self):
         self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port, self.cluster_hosts)
@@ -98,7 +101,7 @@ class HijikiRabbit():
             self.queues[name + "_dlq"].append(queue_dlq)
 
     def _wrap_function(self, function, callback, queue_name, task=False):
-        
+
         self.callbacks[queue_name].append(callback)
 
         # The function returned by the decorator don't really do
@@ -143,7 +146,7 @@ class HijikiRabbit():
 
     def run(self):
         consumers_without_callbacks = [
-            key 
+            key
             for (key, callbacks) in self.callbacks.items()
             if not callbacks
         ]
