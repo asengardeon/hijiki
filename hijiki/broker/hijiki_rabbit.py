@@ -29,6 +29,7 @@ class HijikiRabbit():
         self.queue_exchanges = None
         self.worker = None
         self.port = None
+        self.heartbeat_interval = None
 
     def terminate(self):
         self.worker.should_stop = True
@@ -60,9 +61,13 @@ class HijikiRabbit():
     def ping(self):
         return self.broker.ping()
 
+    def with_heartbeat_interval(self, heartbeat_interval: int):
+        self.heartbeat_interval = heartbeat_interval
+        return self
+
     def build(self):
         self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port, self.cluster_hosts)
-        self.connection = self.broker.get_celery_broker().broker_connection()
+        self.connection = self.broker.get_celery_broker().broker_connection(heartbeat=self.heartbeat_interval)
         self.init_queues()
         return self
 

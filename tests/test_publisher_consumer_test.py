@@ -14,7 +14,7 @@ class TestPublisherConsumer(unittest.TestCase):
     def setUp(self):
         self.runner = Runner()
         self.runner.run()
-        self.pub = Publisher("localhost", "user", "pwd", 5672)
+        self.pub = Publisher("localhost", "user", "pwd", 5672, heartbeat=30)
         self.NUMBER_OF_QUEUED_MESSAGES = 2
 
     def tearDown(self):
@@ -49,7 +49,7 @@ class TestPublisherConsumer(unittest.TestCase):
 
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(self.NUMBER_OF_QUEUED_MESSAGES, len(self.runner.get_results_dlq()))
-    
+
     def test_consume_a_message_without_consumer_dlq(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)

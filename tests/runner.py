@@ -16,6 +16,7 @@ class Runner():
         .with_password("pwd") \
         .with_host("localhost") \
         .with_port(5672) \
+        .with_heartbeat_interval(30)\
         .build()
 
     threads = []
