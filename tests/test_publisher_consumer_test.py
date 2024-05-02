@@ -14,7 +14,7 @@ class TestPublisherConsumer(unittest.TestCase):
     def setUp(self):
         self.runner = Runner()
         self.runner.run()
-        self.pub = Publisher("localhost", "user", "pwd", 5672)
+        self.pub = Publisher("localhost", "user", "pwd", 5672, heartbeat=30)
 
     def tearDown(self):
         self.runner.stop()
