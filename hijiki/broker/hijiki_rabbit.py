@@ -58,6 +58,9 @@ class HijikiRabbit():
         self.port = port
         return self
 
+    def ping(self):
+        return self.broker.ping()
+
     def with_heartbeat_interval(self, heartbeat_interval: int):
         self.heartbeat_interval = heartbeat_interval
         return self
@@ -100,6 +103,7 @@ class HijikiRabbit():
             queue_dlq.bind(self.connection).declare()
 
             self.queues[name].append(queue)
+            self.queues[name + "_dlq"].append(queue_dlq)
 
     def _wrap_function(self, function, callback, queue_name, task=False):
 
@@ -146,6 +150,16 @@ class HijikiRabbit():
             func, process_message, queue_name, task=True)
 
     def run(self):
+        consumers_without_callbacks = [
+            key
+            for (key, callbacks) in self.callbacks.items()
+            if not callbacks
+        ]
+
+        for key in consumers_without_callbacks:
+            self.callbacks.pop(key)
+            self.queues.pop(key)
+
         try:
             self.worker = Worker(self.connection, self)
             self.worker.run()
