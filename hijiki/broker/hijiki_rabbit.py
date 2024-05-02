@@ -23,7 +23,7 @@ class HijikiRabbit():
         self.connection = None
         self.broker = None
         self.host = None
-        self.cluster_hosts = []
+        self.cluster_hosts = None
         self.password = None
         self.username = None
         self.queue_exchanges = None
@@ -51,7 +51,7 @@ class HijikiRabbit():
         return self
 
     def with_cluster_hosts(self, hosts: str):
-        self.cluster_hosts.append(hosts)
+        self.cluster_hosts = hosts
         return self
 
     def with_port(self, port: str):
@@ -73,8 +73,10 @@ class HijikiRabbit():
             name = q.name
             if name not in self.queues:
                 self.queues[name] = []
+                self.queues[name+ "_dlq"] = []
             if name not in self.callbacks:
                 self.callbacks[name] = []
+                self.callbacks[name + "_dlq"] = []
 
             logger.debug("Setting up %s" % name)
             routing_key = "*"
