@@ -39,7 +39,7 @@ If server is not present, even BROKER_CLUSTER_SERVER, the connection url will be
 The example demonstrate how to publish a simple message to topic "teste1_event" with a json message:
 
 ```python
-pub = Publisher("localhost", "rabbitmq", "rabbitmq", 5672)
+pub = Publisher("localhost", "rabbitmq", "rabbitmq", 5672, heartbeat=30)
 pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
 ```
 
@@ -55,6 +55,7 @@ gr = HijikiRabbit().with_queues_exchange(qs) \
     .with_password("rabbitmq") \
     .with_host("localhost") \
     .with_port(5672) \
+    .with_heartbeat_interval(30)\
     .build()
 
 class MyConsumer():

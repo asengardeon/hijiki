@@ -14,54 +14,27 @@ class TestPublisherConsumer(unittest.TestCase):
     def setUp(self):
         self.runner = Runner()
         self.runner.run()
-        self.pub = Publisher("localhost", "user", "pwd", 5672)
-        self.NUMBER_OF_QUEUED_MESSAGES = 2
+        self.pub = Publisher("localhost", "user", "pwd", 5672, heartbeat=30)
 
     def tearDown(self):
         self.runner.stop()
 
     def test_publish_a_message(self):
         self.runner.clear_results()
-        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
+        self.pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
 
     def test_consume_a_message(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
+        self.pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(len(self.runner.get_results()), 1)
 
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.pub.publish_message('erro_event', '{"value": "This is the message"}')
+        self.pub.publish_message('erro_event', '{"value": "Esta é a mensagem"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(DLQ_RETRY_NUMBER, len(self.runner.get_results()))
-
-    def test_consume_a_message_dlq(self):
-        self.runner.clear_results()
-        time.sleep(SECS_TO_AWAIT_BROKER)
-        for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
-            self.pub.publish_message(
-                'erro_event',
-                f'{{"value": "This is message number {number} that will be sent to dlq"}}'
-            )
-
-        time.sleep(SECS_TO_AWAIT_BROKER)
-        self.assertEqual(self.NUMBER_OF_QUEUED_MESSAGES, len(self.runner.get_results_dlq()))
-    
-    def test_consume_a_message_without_consumer_dlq(self):
-        self.runner.clear_results()
-        time.sleep(SECS_TO_AWAIT_BROKER)
-        for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
-            self.pub.publish_message(
-                'without_dlq',
-                '{"value": "This is the message that will fall into a dlq queue, which has no consumer"}'
-            )
-        time.sleep(SECS_TO_AWAIT_BROKER)
-        self.assertEqual(
-            self.NUMBER_OF_QUEUED_MESSAGES * DLQ_RETRY_NUMBER,
-            len(self.runner.get_results())
-        )
 
 

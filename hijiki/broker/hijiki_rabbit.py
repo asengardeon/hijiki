@@ -23,12 +23,13 @@ class HijikiRabbit():
         self.connection = None
         self.broker = None
         self.host = None
-        self.cluster_hosts = None
+        self.cluster_hosts = []
         self.password = None
         self.username = None
         self.queue_exchanges = None
         self.worker = None
         self.port = None
+        self.heartbeat_interval = None
 
     def terminate(self):
         self.worker.should_stop = True
@@ -50,19 +51,20 @@ class HijikiRabbit():
         return self
 
     def with_cluster_hosts(self, hosts: str):
-        self.cluster_hosts = hosts
+        self.cluster_hosts.append(hosts)
         return self
 
     def with_port(self, port: str):
         self.port = port
         return self
 
-    def ping(self):
-        return self.broker.ping()
+    def with_heartbeat_interval(self, heartbeat_interval: int):
+        self.heartbeat_interval = heartbeat_interval
+        return self
 
     def build(self):
         self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port, self.cluster_hosts)
-        self.connection = self.broker.get_celery_broker().broker_connection()
+        self.connection = self.broker.get_celery_broker().broker_connection(heartbeat=self.heartbeat_interval)
         self.init_queues()
         return self
 
@@ -71,10 +73,8 @@ class HijikiRabbit():
             name = q.name
             if name not in self.queues:
                 self.queues[name] = []
-                self.queues[name+ "_dlq"] = []
             if name not in self.callbacks:
                 self.callbacks[name] = []
-                self.callbacks[name + "_dlq"] = []
 
             logger.debug("Setting up %s" % name)
             routing_key = "*"
@@ -98,7 +98,6 @@ class HijikiRabbit():
             queue_dlq.bind(self.connection).declare()
 
             self.queues[name].append(queue)
-            self.queues[name + "_dlq"].append(queue_dlq)
 
     def _wrap_function(self, function, callback, queue_name, task=False):
 
@@ -145,16 +144,6 @@ class HijikiRabbit():
             func, process_message, queue_name, task=True)
 
     def run(self):
-        consumers_without_callbacks = [
-            key
-            for (key, callbacks) in self.callbacks.items()
-            if not callbacks
-        ]
-
-        for key in consumers_without_callbacks:
-            self.callbacks.pop(key)
-            self.queues.pop(key)
-
         try:
             self.worker = Worker(self.connection, self)
             self.worker.run()
