@@ -2,6 +2,8 @@ import time
 from celery import Celery
 from typing import Optional
 
+from kombu import Connection, Exchange, Queue, Consumer
+
 from hijiki.broker.broker_data import get_broker_url, init_os_environ
 
 
@@ -21,18 +23,20 @@ class HijikiBroker:
     def ping(self):
         try:
             success_ping = False
-            inspect = self.celery_broker.control.inspect()
-            for i in range(4):
-                try:
-                    inspect.ping()
+            rabbit_url = get_broker_url()
+            conn = Connection(rabbit_url)
+            try:
+                exchange = Exchange("ping-exchange", type="direct")
+                queue = Queue(name="ping-queue", exchange=exchange, routing_key="Pong")
+
+                def process_message(body, message):
+                    print("The body is {}".format(body))
+                    message.ack()
+
+                with Consumer(conn, queues=queue, callbacks=[process_message], accept=["text/plain"]):
                     success_ping = True
-                    break
-                except BrokenPipeError as e:
-                    time.sleep(0.10)
-                    print("Celery worker connection failed. Reattempting")
-                    if i == 3:
-                        print("Failed to connect to celery due to a BrokenPipeError")
-                        print(e)
+            finally:
+                conn.close()
             return success_ping
         except Exception as e:
             print("Failed to start broker")
