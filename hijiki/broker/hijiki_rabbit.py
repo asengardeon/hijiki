@@ -30,6 +30,9 @@ class HijikiRabbit():
         self.worker = None
         self.port = None
         self.heartbeat_interval = None
+        self.qos_initial_value = 0
+        self.prefetch = 0
+        self.auto_ack = False
 
     def terminate(self):
         self.worker.should_stop = True
@@ -58,11 +61,20 @@ class HijikiRabbit():
         self.port = port
         return self
 
+    def with_prefetch(self, initial: int, value: int):
+        self.qos_initial_value = initial
+        self.prefetch = value
+        return self
+
     def ping(self):
         return self.broker.ping()
 
     def with_heartbeat_interval(self, heartbeat_interval: int):
         self.heartbeat_interval = heartbeat_interval
+        return self
+
+    def with_auto_ack(self, auto_ack: bool):
+        self.auto_ack = auto_ack
         return self
 
     def build(self):
@@ -138,6 +150,8 @@ class HijikiRabbit():
                                                  message,
                                                  body))
             try:
+                if self.auto_ack:
+                    message.ack()
                 func(body)
             except Exception as e:
                 logger.error("Problem processing task", exc_info=True)
@@ -162,6 +176,7 @@ class HijikiRabbit():
 
         try:
             self.worker = Worker(self.connection, self)
+            self.worker.set_prefetch(self.qos_initial_value, self.prefetch)
             self.worker.run()
         except KeyboardInterrupt:
             print('bye bye')
