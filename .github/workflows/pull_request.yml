@@ -8,54 +8,59 @@ on:
       - feature/**
       - chore/**
       - doc/**
+
 jobs:
   build_on_pull_request:
     runs-on: ubuntu-latest
-    steps: 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.13
-      - name: Install pipenv
-        run: |
-          curl https://pyenv.run | bash
-        shell: bash
-      - name: Install pipenv
-        run: |
-          pip install pipenv
-        shell: bash
-      - name: Install dependencies with pipenv
-        run: |
-          pipenv install --deploy --ignore-pipfile
-          pipenv install setuptools
-      - name: Install Compose
-        run: |
-          set -x
-          set -e
-          arch="$(uname)-$(uname -m)"
-          flavor=$(echo $arch | tr '[:upper:]' '[:lower:]' )
 
-          DOWNLOAD_URL="https://github.com/docker/compose/releases/download/v2.1.0/docker-compose-${flavor}"
-          if [[ "v2.1.0" == "latest" ]]; then
-            DOWNLOAD_URL=$(curl -fL https://api.github.com/repos/docker/compose/releases/latest | jq -r '.assets[] | select(.name == "docker-compose-linux-x86_64") | .browser_download_url')
-          fi
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-          echo "Download Compose v2.1.0 for ${flavor} from ${DOWNLOAD_URL}"
-          mkdir -p ~/.docker/cli-plugins/
-          curl -fsSL "$DOWNLOAD_URL" -o ~/.docker/cli-plugins/docker-compose
-          chmod +x ~/.docker/cli-plugins/docker-compose
-      - name: Start containers
-        run: ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
-      - name: Run tests
-        run: pipenv run python -m coverage run -m unittest tests/**
-      - name: generate xml coverage
-        run: pipenv run python -m coverage xml
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      - name: Stop containers
-        if: always()
-        run: ~/.docker/cli-plugins/docker-compose down
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - name: Install pipenv
+      run: |
+        pip install pipenv
+      shell: bash
+
+    - name: Install dependencies with pipenv
+      run: |
+        pipenv install --deploy --ignore-pipfile
+        pipenv install wheel setuptools coverage
+    - name: Install Compose
+      shell: bash
+      run: |
+        set -x
+        set -e
+        arch="$(uname)-$(uname -m)"
+        flavor=$(echo $arch | tr '[:upper:]' '[:lower:]' )
+        
+        DOWNLOAD_URL="https://github.com/docker/compose/releases/download/v2.1.0/docker-compose-${flavor}"
+        if [[ "v2.1.0" == "latest" ]]; then
+          DOWNLOAD_URL=$(curl -fL https://api.github.com/repos/docker/compose/releases/latest | jq -r '.assets[] | select(.name == "docker-compose-linux-x86_64") | .browser_download_url')
+        fi
+        
+        echo "Download Compose v2.1.0 for ${flavor} from ${DOWNLOAD_URL}"
+        mkdir -p ~/.docker/cli-plugins/
+        curl -fsSL "$DOWNLOAD_URL" -o ~/.docker/cli-plugins/docker-compose
+        chmod +x ~/.docker/cli-plugins/docker-compose
+    - name: Start containers
+      run: ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
+    - name: Run tests
+      run: pipenv run python -m coverage run -m unittest tests/**
+    - name: generate xml coverage
+      run: pipenv run python -m coverage xml
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+#    - name: Stop containers
+#      if: always()
+#      run: docker rm rabbit-test
+#      shell: bash
+    - name: Stop containers
+      if: always()
+      run: ~/.docker/cli-plugins/docker-compose down
