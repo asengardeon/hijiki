@@ -16,10 +16,11 @@ class Runner():
         .with_password("pwd") \
         .with_host("localhost") \
         .with_port(5672) \
-        .with_heartbeat_interval(30)\
+        .with_heartbeat_interval(30) \
         .build()
 
     threads = []
+
 
     @gr.task(queue_name="teste1")
     def internal_consumer(data):
@@ -72,3 +73,6 @@ class Runner():
 
     def get_results_dlq(self):
         return result_event_list_dlq
+
+    def set_auto_ack(self, auto_ack: bool):
+        self.gr.with_auto_ack(auto_ack)

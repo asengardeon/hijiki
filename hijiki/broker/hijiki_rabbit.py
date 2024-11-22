@@ -30,6 +30,7 @@ class HijikiRabbit():
         self.worker = None
         self.port = None
         self.heartbeat_interval = None
+        self.auto_ack = False
 
     def terminate(self):
         self.worker.should_stop = True
@@ -63,6 +64,10 @@ class HijikiRabbit():
 
     def with_heartbeat_interval(self, heartbeat_interval: int):
         self.heartbeat_interval = heartbeat_interval
+        return self
+
+    def with_auto_ack(self, auto_ack: bool):
+        self.auto_ack = auto_ack
         return self
 
     def build(self):
@@ -138,6 +143,8 @@ class HijikiRabbit():
                                                  message,
                                                  body))
             try:
+                if self.auto_ack:
+                    message.ack()
                 func(body)
             except Exception as e:
                 logger.error("Problem processing task", exc_info=True)

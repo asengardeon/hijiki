@@ -13,7 +13,7 @@ jobs:
   build_on_pull_request:
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
@@ -23,28 +23,30 @@ jobs:
         python-version: 3.x
     - name: Install pipenv
       run: |
-        curl https://pyenv.run | bash
-      shell: bash
-
-    - name: Install pipenv
-      run: |
         pip install pipenv
       shell: bash
 
     - name: Install dependencies with pipenv
       run: |
         pipenv install --deploy --ignore-pipfile
-        pipenv install setuptools
-
+        pipenv install wheel setuptools coverage
     - name: Install Compose
-      uses: ndeloof/install-compose-action@v0.0.1
-      with:
-        version: v2.1.0 # defaults to 'latest'
-        legacy: true    # will also install in PATH as `docker-compose`
-        run: docker-compose --version
-#    - name: Start containers
-#      run: docker run  -d -e RABBITMQ_DEFAULT_USER=rabbitmq -e RABBITMQ_DEFAULT_PASS=rabbitmq -p 15672:15672 -p 5672:5672 --name rabbit-test  rabbitmq:3-management
-#      shell: bash
+      shell: bash
+      run: |
+        set -x
+        set -e
+        arch="$(uname)-$(uname -m)"
+        flavor=$(echo $arch | tr '[:upper:]' '[:lower:]' )
+        
+        DOWNLOAD_URL="https://github.com/docker/compose/releases/download/v2.1.0/docker-compose-${flavor}"
+        if [[ "v2.1.0" == "latest" ]]; then
+          DOWNLOAD_URL=$(curl -fL https://api.github.com/repos/docker/compose/releases/latest | jq -r '.assets[] | select(.name == "docker-compose-linux-x86_64") | .browser_download_url')
+        fi
+        
+        echo "Download Compose v2.1.0 for ${flavor} from ${DOWNLOAD_URL}"
+        mkdir -p ~/.docker/cli-plugins/
+        curl -fsSL "$DOWNLOAD_URL" -o ~/.docker/cli-plugins/docker-compose
+        chmod +x ~/.docker/cli-plugins/docker-compose
     - name: Start containers
       run: ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
     - name: Run tests

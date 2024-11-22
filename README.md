@@ -71,4 +71,27 @@ if __name__ == '__main__':
     MyConsumer()
     gr.run()
 ```
+#  Properties of builder from HijikiRabbit
+
+##  with_username
+Set username of Rabbit Connection
+
+##  with_password
+Set password of Rabbit Connection
+
+##  with_host
+Set host of rabbit when use single node server
+
+## with_port
+SEt port of rabbit when use single node server
+
+##  with_cluster_hosts
+Set a list of rabbit hosts:port when cluestered server.
+Example: server-1:5672,server-1:5672,server-1:5672
+
+##  with_heartbeat_interval
+Define heartbeat interval in seconds
+
+## with_auto_ack
+Define Auto_ack to publish message with autoack
 
