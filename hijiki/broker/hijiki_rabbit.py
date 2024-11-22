@@ -30,8 +30,6 @@ class HijikiRabbit():
         self.worker = None
         self.port = None
         self.heartbeat_interval = None
-        self.qos_initial_value = 0
-        self.prefetch = 0
         self.auto_ack = False
 
     def terminate(self):
@@ -59,11 +57,6 @@ class HijikiRabbit():
 
     def with_port(self, port: str):
         self.port = port
-        return self
-
-    def with_prefetch(self, initial: int, value: int):
-        self.qos_initial_value = initial
-        self.prefetch = value
         return self
 
     def ping(self):
@@ -176,7 +169,6 @@ class HijikiRabbit():
 
         try:
             self.worker = Worker(self.connection, self)
-            self.worker.set_prefetch(self.qos_initial_value, self.prefetch)
             self.worker.run()
         except KeyboardInterrupt:
             print('bye bye')

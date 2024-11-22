@@ -89,9 +89,6 @@ SEt port of rabbit when use single node server
 Set a list of rabbit hosts:port when cluestered server.
 Example: server-1:5672,server-1:5672,server-1:5672
 
-##  with_prefetch
-Set define prefetch to consumer
-
 ##  with_heartbeat_interval
 Define heartbeat interval in seconds
 

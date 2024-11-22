@@ -17,15 +17,10 @@ class Runner():
         .with_host("localhost") \
         .with_port(5672) \
         .with_heartbeat_interval(30) \
-        .with_prefetch(1, 1)\
         .build()
 
     threads = []
 
-    def with_prefetch(self, initial_qos, prefetch):
-        self.initial_qos = initial_qos
-        self.prefetch = prefetch
-        return self
 
     @gr.task(queue_name="teste1")
     def internal_consumer(data):
