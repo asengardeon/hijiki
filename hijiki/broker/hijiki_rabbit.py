@@ -148,10 +148,12 @@ class HijikiRabbit():
                 func(body)
             except Exception as e:
                 logger.error("Problem processing task", exc_info=True)
-                message.requeue()
+                if not self.auto_ack:
+                   message.requeue()
             else:
                 logger.debug("Ack'ing message.")
-                message.ack()
+                if not self.auto_ack:
+                    message.ack()
 
         return self._wrap_function(
             func, process_message, queue_name, task=True)
@@ -167,8 +169,6 @@ class HijikiRabbit():
             self.callbacks.pop(key)
             self.queues.pop(key)
 
-        try:
-            self.worker = Worker(self.connection, self)
-            self.worker.run()
-        except KeyboardInterrupt:
-            print('bye bye')
+        self.worker = Worker(self.connection, self)
+        self.worker.run()
+
