@@ -169,8 +169,6 @@ class HijikiRabbit():
             self.callbacks.pop(key)
             self.queues.pop(key)
 
-        try:
-            self.worker = Worker(self.connection, self)
-            self.worker.run()
-        except KeyboardInterrupt:
-            print('bye bye')
+        self.worker = Worker(self.connection, self)
+        self.worker.run()
+
