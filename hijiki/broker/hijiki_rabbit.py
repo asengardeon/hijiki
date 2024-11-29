@@ -15,9 +15,6 @@ class HijikiQueueExchange():
 
 
 class HijikiRabbit():
-    queues = {}
-    callbacks = {}
-    _prefix = ""
 
     def __init__(self):
         self.connection = None
@@ -31,6 +28,8 @@ class HijikiRabbit():
         self.port = None
         self.heartbeat_interval = None
         self.auto_ack = False
+        self.queues = {}
+        self.callbacks = {}
 
     def terminate(self):
         self.worker.should_stop = True
@@ -72,7 +71,7 @@ class HijikiRabbit():
 
     def build(self):
         self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port, self.cluster_hosts)
-        self.connection = self.broker.get_celery_broker().broker_connection(heartbeat=self.heartbeat_interval)
+        self.connection = self.broker.get_celery_broker().connection()
         self.init_queues()
         return self
 
