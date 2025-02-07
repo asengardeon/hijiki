@@ -38,3 +38,8 @@ class RabbitMQBroker(MessageBroker):
             self.channel.queue_declare(queue=consumer_data.queue, durable=True)
             logging.info(f"Fila {consumer_data.queue} criada sem handler.")
             return None
+
+    def start_consuming(self):
+        """Inicia o consumo das filas registradas"""
+        for consumer in self.consumers.values():
+            consumer.consume()

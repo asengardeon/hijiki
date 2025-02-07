@@ -25,7 +25,12 @@ class RabbitMQConnection:
         self.connection = None
         self.channel = None
 
+    def __validate_host(self):
+        if self.host and self.cluster_hosts:
+            raise Exception("BROKER_HOST e BROKER_CLUSTER_SERVER são mutuamente exclusivos e não podem os dois estarem definidos")
+
     def get_broker_url(self) -> str:
+        self.__validate_host()
         """Gera a URL de conexão para o broker."""
         if self.cluster_hosts:
             cluster = self.cluster_hosts.split(',')

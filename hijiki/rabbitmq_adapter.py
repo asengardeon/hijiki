@@ -1,6 +1,6 @@
 
 import logging
-from typing import Callable
+from typing import Callable, Optional
 
 from hijiki.rabbitmq_connection import RabbitMQConnection
 

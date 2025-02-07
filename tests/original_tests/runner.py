@@ -53,12 +53,12 @@ class Runner():
 
 
     def run(self):
-        t = threading.Thread(target=self.gr.run)
+        t = threading.Thread(target=self.gr.start_consuming())
         self.threads.append(t)
         t.start()
 
     def stop(self):
-        self.gr.terminate()
+        self.gr.stop_consuming()
 
     def __del__(self):
         super()
