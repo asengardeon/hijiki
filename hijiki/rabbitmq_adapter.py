@@ -6,19 +6,17 @@ from hijiki.rabbitmq_connection import RabbitMQConnection
 
 
 class RabbitMQAdapter:
-    def __init__(self, connection: RabbitMQConnection, queue: str, topic: str, handler: Callable):
+    def __init__(self, connection: RabbitMQConnection, queue: str, topic: Optional[str], handler: Callable):
         self.connection = connection
         self.queue = queue
-        self.topic = topic
+        self.topic = topic or queue
         self.handler = handler
         self.channel = connection.get_channel()
         self.create_exchange_and_queue()
 
     def create_exchange_and_queue(self):
         """Cria o Exchange do tipo 'topic', a fila como quorum e a DLQ."""
-        self.channel.exchange_declare(exchange=self.topic, exchange_type='topic', durable=True)
-
-        dlq_exchange = f"{self.topic}_DLQ"
+        dlq_exchange = f"{self.queue}_DLQ"
         dlq_queue = f"{self.queue}_DLQ"
 
         self.channel.exchange_declare(exchange=dlq_exchange, exchange_type="fanout", durable=True)
@@ -31,10 +29,14 @@ class RabbitMQAdapter:
             "x-delivery-limit": 10
         }
         self.channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
-        self.channel.queue_bind(queue=self.queue, exchange=self.topic, routing_key="*")
+
+        if self.topic:
+            self.channel.exchange_declare(exchange=self.topic, exchange_type='topic', durable=True)
+            self.channel.queue_bind(queue=self.queue, exchange=self.topic, routing_key="*")
 
     def consume(self):
         """Inicia o consumo da fila, utilizando o handler para processar as mensagens."""
+
         def callback(ch, method, properties, body):
             try:
                 self.handler(body)

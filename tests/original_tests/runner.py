@@ -1,17 +1,19 @@
 import threading
 
-from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
+from hijiki.consumer_data import ConsumerData
+from hijiki.decorator import consumer_handler
+from hijiki.message_manager_builder import MessageManagerBuilder
 
 result_event_list = []
 result_event_list_dlq = []
 
 class Runner():
     qs = [
-        HijikiQueueExchange('teste1', 'teste1_event'),
-        HijikiQueueExchange('fila_erro', 'erro_event'),
-        HijikiQueueExchange('without_dlq', 'without_dlq'),
+        ConsumerData('teste1', 'teste1_event'),
+        ConsumerData('fila_erro', 'erro_event'),
+        ConsumerData('without_dlq', 'without_dlq'),
     ]
-    gr = HijikiRabbit().with_queues_exchange(qs) \
+    gr = MessageManagerBuilder().with_consumers(qs) \
         .with_username("user") \
         .with_password("pwd") \
         .with_host("localhost") \
@@ -22,28 +24,28 @@ class Runner():
     threads = []
 
 
-    @gr.task(queue_name="teste1")
+    @consumer_handler(queue_name="teste1")
     def internal_consumer(data):
         print(f"consumiu o valor:{data}")
         result_event_list.append('received event')
     
-    @gr.task(queue_name="teste1_dlq")
+    @consumer_handler(queue_name="teste1_dlq")
     def internal_consumer_dlq(data):
         print(f"consumiu o valor:{data}")
         result_event_list_dlq.append('received event')
 
-    @gr.task(queue_name="fila_erro")
+    @consumer_handler(queue_name="fila_erro")
     def internal_consumer_erro(data):
         print(f"consumiu o valor:{data}")
         result_event_list.append('received event')
         raise Exception("falhou")
 
-    @gr.task(queue_name="fila_erro_dlq")
+    @consumer_handler(queue_name="fila_erro_dlq")
     def internal_consumer_erro_dlq(data):
         print(f"consumiu o valor:{data}")
         result_event_list_dlq.append('received event')
     
-    @gr.task(queue_name="without_dlq")
+    @consumer_handler(queue_name="without_dlq")
     def internal_consumer_extra(data):
         print(f"consumiu o valor:{data}")
         result_event_list.append('received event')
