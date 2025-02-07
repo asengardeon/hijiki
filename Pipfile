@@ -3,11 +3,20 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
-[packages]
-celery = "5.3.4"
-urllib3 = "<2.0"
-
 [dev-packages]
-twine = "==4.0.2"
-testcontainers-core = "==0.0.1rc1"
-coverage = "==7.3.2"
+pytest = "8.3.4"
+pytest-cov = "6.0.0"
+pytest-docker = "3.1.2"
+black = "*"
+mypy = "*"
+flake8 = "*"
+
+[packages]
+pika = "1.3.2"
+fastapi = "0.115.8"
+loguru = "*"
+python-dotenv = "*"
+uvicorn = { version = "*", extras = ["dev"] }
+
+[requires]
+python_version = "3.9"

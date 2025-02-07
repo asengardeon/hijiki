@@ -1,97 +1,102 @@
-# Hijiki
-Python Rabbit wrapper library to simplify to use Exchanges and Queues with decorators
+# Biblioteca de Gerenciamento de Mensagens com RabbitMQ
 
-## Configurations
-Hijiki uses environment variables to configure connection with BROKER. 
+Este projeto fornece uma abstração para facilitar o uso do RabbitMQ em aplicações Python, incluindo suporte para FastAPI e uso puro em Python.
 
-### COMMON
-- BROKER_PWD
-- BROKER_USERNAME
+## 📌 Requisitos
 
-### For single server
-- BROKER_PORT
-- BROKER_SERVER
+- Python 3.7+
+- RabbitMQ
+- Dependências do projeto:
+  ```sh
+  pip install pika fastapi uvicorn
+  
+##  📦 Instalação
+Clone este repositório e instale as dependências:
 
-### For cluster server
-- BROKER_CLUSTER_SERVER
-
-if BROKER_CLUSTER_SERVER is present the priority is generate URI using this list of servers, and not use the sever for single server. 
-To user multiples server from cluster is necessary this environment variable has a list of server with port separates with comma. 
-
-Ex: 
-```
-serverA:5672,serverB:5673
-
-```
-generating for uri connection string the value above
-
-``
-amqp://usr:password@server:5672;amqp://usr:password@serverB:5672;
-``
-
-The user and password is the same for all servers.
-
-
-If server is not present, even BROKER_CLUSTER_SERVER, the connection url will be a default, and to others configs will be changed for "teste".
-
-## How to use
-### Publisher
-The example demonstrate how to publish a simple message to topic "teste1_event" with a json message:
-
-```python
-pub = Publisher("localhost", "rabbitmq", "rabbitmq", 5672, heartbeat=30)
-pub.publish_message('teste1_event', '{"value": "Esta é a mensagem"}')
+``` shell
+git clone https://github.com/seu-repositorio/rabbitmq-manager.git
+cd rabbitmq-manager
+pip install -r requirements.txt
 ```
 
-### Consumer
-Consumer uses a configuration to define QUEUES and Exchanges and the consumer is a decorator for the queue.
+## 🚀 Como Usar
+1. Exemplo com FastAPI
 
-```python
-from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
+Inicie um servidor FastAPI para enviar mensagens ao RabbitMQ:
 
-qs = [HijikiQueueExchange('teste1', 'teste1_event'), HijikiQueueExchange('teste2', 'teste2_event')]
-gr = HijikiRabbit().with_queues_exchange(qs) \
-    .with_username("rabbitmq") \
-    .with_password("rabbitmq") \
-    .with_host("localhost") \
-    .with_port(5672) \
-    .with_heartbeat_interval(30)\
-    .build()
+``` python
+from fastapi import FastAPI
+from message_manager import MessageManagerBuilder
 
-class MyConsumer():
-    @gr.task(queue_name='teste1')
-    def my_consumer(data):
-        print(f"consumer 1 executed with data : {data}")
+app = FastAPI()
 
-    @gr.task(queue_name='teste2')
-    def my_consumer2(data):
-        print(f"consumer 2  executed with data : {data}")
+builder = MessageManagerBuilder()
+manager = builder.with_host("localhost").with_port(5672).with_user("user").with_password("pwd").build()
 
-if __name__ == '__main__':
-    MyConsumer()
-    gr.run()
+@app.get("/publish/{queue}/{message}")
+async def publish_message(queue: str, message: str):
+    manager.publish(queue, message)
+    return {"message": f"Message sent to {queue}"}
+
+@app.get("/ping")
+async def ping():
+    return {"status": "RabbitMQ is connected" if manager.connection.ping() else "RabbitMQ is not connected"}
+
 ```
-#  Properties of builder from HijikiRabbit
 
-##  with_username
-Set username of Rabbit Connection
+Para rodar a API:
 
-##  with_password
-Set password of Rabbit Connection
+```bash
+uvicorn main:app --reload
+```
+## Exemplo Puro em Python
 
-##  with_host
-Set host of rabbit when use single node server
+``` python
+import time
+from message_manager import MessageManagerBuilder
 
-## with_port
-SEt port of rabbit when use single node server
+builder = MessageManagerBuilder()
+manager = builder.with_host("localhost").with_port(5672).with_user("user").with_password("pwd").build()
 
-##  with_cluster_hosts
-Set a list of rabbit hosts:port when cluestered server.
-Example: server-1:5672,server-1:5672,server-1:5672
+queue = "example_queue"
+message = "Hello, RabbitMQ!"
 
-##  with_heartbeat_interval
-Define heartbeat interval in seconds
+manager.publish(queue, message)
+print(f"Message '{message}' sent to queue '{queue}'")
 
-## with_auto_ack
-Define Auto_ack to publish message with autoack
+time.sleep(2)
+
+print("Consuming messages...")
+
+@MessageManager.rabbitmq_consumer(queue, "example_topic")
+def process_message(msg):
+    print(f"Received: {msg}")
+```
+
+##  🔧 Configuração com MessageManagerBuilder
+
+O MessageManagerBuilder permite configurar a conexão com o RabbitMQ de forma flexível:
+
+``` python
+builder = MessageManagerBuilder()
+manager = (builder.with_host("localhost")
+                .with_port(5672)
+                .with_user("user")
+                .with_password("pwd")
+                .with_heartbeat(60)
+                .with_cluster_hosts("host1,host2")
+                .build())
+
+```
+##  Métodos disponíveis no Builder:
+
+- with_host(host: str): Define o host do RabbitMQ.  
+- with_port(port: int): Define a porta do RabbitMQ.  
+- with_user(user: str): Define o usuário de autenticação.  
+- with_password(password: str): Define a senha de autenticação.  
+- with_heartbeat(heartbeat: int): Define o tempo de heartbeat.  
+- with_cluster_hosts(cluster_hosts: str): Define múltiplos hosts para conexão em cluster.  
+
+
+
 
