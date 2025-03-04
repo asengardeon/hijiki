@@ -1,5 +1,4 @@
 import logging
-from datetime import time
 
 import pika
 from typing import Optional
@@ -48,14 +47,14 @@ class RabbitMQConnection:
 
     def get_channel(self):
         if not self.channel or self.connection.is_closed:
-            self.connect()
+           self.connect()
         return self.channel
 
     def ping(self):
         try:
-            if self.connection and self.connection.is_open:
+            if self.connection and self.connection.is_open():
                 self.connection.process_data_events()
                 return True
         except Exception:
-            self.connect()
+            return False
         return False

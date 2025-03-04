@@ -8,7 +8,7 @@ class BrokerConfig:
 
     @staticmethod
     def get_port() -> int:
-        return int(os.getenv(BrokerEnvVars.BROKER_PORT))
+        return os.getenv(BrokerEnvVars.BROKER_PORT)
 
     @staticmethod
     def get_user() -> str:

@@ -19,3 +19,9 @@ class MessageManager:
 
     def start_consuming(self):
         self.broker.start_consuming()
+
+    def is_alive(self):
+        try:
+          return self.broker.ping()
+        except Exception:
+            return False

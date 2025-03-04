@@ -14,3 +14,7 @@ class MessageBroker(ABC):
     @abstractmethod
     def start_consuming(self):
         pass
+
+    @abstractmethod
+    def ping(self):
+        pass

@@ -1,8 +1,7 @@
 import time
 import unittest
 
-from hijiki.publisher.Publisher import Publisher
-from tests.runner import Runner
+from tests.original_tests.runner import Runner
 
 DLQ_RETRY_NUMBER = 11 # At eleven interaction the message goes to the Dead Letter Queue
 SECS_TO_AWAIT_BROKER = 5
@@ -15,7 +14,6 @@ class TestPublisherConsumer(unittest.TestCase):
     def setUp(self):
         self.runner = Runner()
         self.runner.run()
-        self.pub = Publisher("localhost", "user", "pwd", 5672, heartbeat=30)
         self.NUMBER_OF_QUEUED_MESSAGES = 2
 
     def tearDown(self):
@@ -23,19 +21,19 @@ class TestPublisherConsumer(unittest.TestCase):
 
     def test_publish_a_message(self):
         self.runner.clear_results()
-        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
+        self.runner.publish_message('teste1_event', '{"value": "This is the message"}')
 
     def test_consume_a_message(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
+        self.runner.publish_message('teste1_event', '{"value": "This is the message"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(len(self.runner.get_results()), 1)
 
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.pub.publish_message('erro_event', '{"value": "This is the message"}')
+        self.runner.publish_message('erro_event', '{"value": "This is the message"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(DLQ_RETRY_NUMBER, len(self.runner.get_results()))
 
@@ -44,7 +42,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.runner.set_auto_ack(True)
         try:
             time.sleep(SECS_TO_AWAIT_BROKER)
-            self.pub.publish_message('erro_event', '{"value": "This is the message"}')
+            self.runner.publish_message('erro_event', '{"value": "This is the message"}')
             time.sleep(SECS_TO_AWAIT_BROKER)
             self.assertEqual(DLQ_DONT_RECEIVE_ERROR_WITH_AUTO_ACK_ENABLED, len(self.runner.get_results()))
         finally:
@@ -54,7 +52,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
         for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
-            self.pub.publish_message(
+            self.runner.publish_message(
                 'erro_event',
                 f'{{"value": "This is message number {number} that will be sent to dlq"}}'
             )
@@ -66,7 +64,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
         for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
-            self.pub.publish_message(
+            self.runner.publish_message(
                 'without_dlq',
                 '{"value": "This is the message that will fall into a dlq queue, which has no consumer"}'
             )

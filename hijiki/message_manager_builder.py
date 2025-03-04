@@ -10,8 +10,8 @@ from hijiki.rabbitmq_broker import RabbitMQBroker
 class MessageManagerBuilder:
     _instance = None  # Instância única do MessageManager
 
-    def __init__(self):
-        if MessageManagerBuilder._instance is not None:
+    def __init__(self, recreate=False):
+        if MessageManagerBuilder._instance is not None and not recreate:
             raise ValueError("Apenas uma instância do MessageManager pode existir.")
 
         broker_config = BrokerConfig()
@@ -25,9 +25,9 @@ class MessageManagerBuilder:
         MessageManagerBuilder._instance = self
 
     @staticmethod
-    def get_instance():
-        if MessageManagerBuilder._instance is None:
-            MessageManagerBuilder()
+    def get_instance(recreate=False):
+        if MessageManagerBuilder._instance is None or recreate:
+            MessageManagerBuilder(recreate)
         return MessageManagerBuilder._instance
 
     def with_host(self, host: str):

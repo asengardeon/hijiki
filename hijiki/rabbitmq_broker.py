@@ -43,3 +43,6 @@ class RabbitMQBroker(MessageBroker):
         """Inicia o consumo das filas registradas"""
         for consumer in self.consumers.values():
             consumer.consume()
+
+    def ping(self):
+        return self.connection.ping()
