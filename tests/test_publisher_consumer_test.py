@@ -32,16 +32,19 @@ class TestPublisherConsumer(unittest.TestCase):
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(len(self.runner.get_results()), 1)
 
-    def test_publish_a_message_nest_patter(self):
+    def test_consume_a_message_with_other_mapper(self):
         self.runner.clear_results()
-        self.pub.publish_message('teste1_event', '{"value": "This is the message"}', nest_patter=True)
+        def other_message_mapper(event_name: str, data: str):
+            return {"other_key": data, "event_name": event_name}
 
-    def test_consume_a_message_nest_patter(self):
-        self.runner.clear_results()
+        event_name = 'teste1_event'
+        message = '{"value": "This is the message"}'
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.pub.publish_message('teste1_event', '{"value": "This is the message"}', nest_patter=True)
+        self.pub.publish_message(event_name, message, message_mapper=other_message_mapper)
         time.sleep(SECS_TO_AWAIT_BROKER)
-        self.assertEqual(len(self.runner.get_results()), 1)
+        self.assertEqual(self.runner.get_results_data(), [
+            {"other_key": message, "event_name": event_name}
+        ])
 
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
