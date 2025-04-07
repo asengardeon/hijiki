@@ -32,6 +32,17 @@ class TestPublisherConsumer(unittest.TestCase):
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(len(self.runner.get_results()), 1)
 
+    def test_publish_a_message_nest_patter(self):
+        self.runner.clear_results()
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}', nest_patter=True)
+
+    def test_consume_a_message_nest_patter(self):
+        self.runner.clear_results()
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}', nest_patter=True)
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(len(self.runner.get_results()), 1)
+
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)

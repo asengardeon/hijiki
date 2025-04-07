@@ -10,8 +10,12 @@ class Publisher():
     def __init__(self, host, username, password, port, cluster_hosts: str = None, heartbeat: Optional[float] = 60):
         self.client = HijikiBroker('client', host, username, password, port, cluster_hosts, heartbeat=heartbeat)
 
-    def publish_message(self, event_name: str, data: str):
-        payload = {"value": data}
+    def publish_message(self, event_name: str, data: str, nest_patter: bool = False):
+        if nest_patter:
+            payload = {"data": data, "pattern": event_name}
+        else:
+            payload = {"value": data}
+
         connection = self.client.get_celery_broker().broker_connection(heartbeat=self.client.heartbeat)
         with producers[connection].acquire(block=True) as producer:
             task_exchange = Exchange(event_name, type='topic')
