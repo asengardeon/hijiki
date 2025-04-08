@@ -3,6 +3,7 @@ import threading
 from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
 
 result_event_list = []
+result_data_list = []
 result_event_list_dlq = []
 
 class Runner():
@@ -25,8 +26,9 @@ class Runner():
     @gr.task(queue_name="teste1")
     def internal_consumer(data):
         print(f"consumiu o valor:{data}")
+        result_data_list.append(data)
         result_event_list.append('received event')
-    
+
     @gr.task(queue_name="teste1_dlq")
     def internal_consumer_dlq(data):
         print(f"consumiu o valor:{data}")
@@ -42,10 +44,11 @@ class Runner():
     def internal_consumer_erro_dlq(data):
         print(f"consumiu o valor:{data}")
         result_event_list_dlq.append('received event')
-    
+
     @gr.task(queue_name="without_dlq")
     def internal_consumer_extra(data):
         print(f"consumiu o valor:{data}")
+        result_data_list.append(data)
         result_event_list.append('received event')
         raise Exception("falhou")
 
@@ -63,13 +66,14 @@ class Runner():
 
     def clear_results(self):
         result_event_list.clear()
+        result_data_list.clear()
         result_event_list_dlq.clear()
 
     def get_results(self):
         return result_event_list
 
-    def get_results(self):
-        return result_event_list
+    def get_results_data(self):
+        return result_data_list
 
     def get_results_dlq(self):
         return result_event_list_dlq
