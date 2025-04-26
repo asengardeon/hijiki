@@ -4,7 +4,6 @@ from unittest.mock import patch, Mock, MagicMock
 import pika
 
 from hijiki.message_manager_builder import MessageManagerBuilder
-from hijiki.rabbitmq_connection import RabbitMQConnection
 
 DLQ_RETRY_NUMsBER = 11 # At eleven interaction the message goes to the Dead Letter Queue
 SECS_TO_AWAIT_BROKER = 5

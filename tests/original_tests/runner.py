@@ -8,17 +8,16 @@ result_event_list = []
 result_event_list_dlq = []
 
 class Runner():
-    qs = [
-        ConsumerData('teste1', 'teste1_event'),
-        ConsumerData('fila_erro', 'erro_event'),
-        ConsumerData('without_dlq', 'without_dlq'),
-    ]
-    gr = MessageManagerBuilder().with_consumers(qs) \
-        .with_username("user") \
+    # qs = [
+    #     ConsumerData('teste1', 'teste1_event'),
+    #     ConsumerData('fila_erro', 'erro_event'),
+    #     ConsumerData('without_dlq', 'without_dlq'),
+    # ]
+    gr = MessageManagerBuilder()\
+        .with_user("user") \
         .with_password("pwd") \
         .with_host("localhost") \
         .with_port(5672) \
-        .with_heartbeat_interval(30) \
         .build()
 
     threads = []
@@ -78,3 +77,6 @@ class Runner():
 
     def set_auto_ack(self, auto_ack: bool):
         self.gr.with_auto_ack(auto_ack)
+
+    def publish_message(self, event_name, message):
+        self.gr.publish(event_name, message)
