@@ -1,4 +1,6 @@
 # message_manager.py
+from typing import Callable
+
 from hijiki.message_broker import MessageBroker
 from hijiki.consumer_data import ConsumerData
 import logging
@@ -8,8 +10,12 @@ class MessageManager:
         self.broker = broker
         self.consumers = {}
 
-    def publish(self, topic: str, message: str):
-        self.broker.publish(topic, message)
+    def __default_message_mapper(_: str, data: str):
+        return {"value": data}
+
+    def publish(self, topic: str, message: str, message_mapper: Callable[[str, str], dict]=__default_message_mapper):
+        payload = message_mapper(topic, message)
+        self.broker.publish(topic, payload)
         logging.info(f"Mensagem publicada no tópico {topic}: {message}")
 
     def create_consumer(self, consumer_data: ConsumerData):
