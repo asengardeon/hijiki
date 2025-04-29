@@ -71,7 +71,9 @@ class HijikiRabbit():
 
     def build(self):
         self.broker = HijikiBroker('worker', self.host, self.username, self.password, self.port, self.cluster_hosts)
-        self.connection = self.broker.get_celery_broker().connection()
+        self.connection = self.broker.get_celery_broker().connection(
+            heartbeat=self.heartbeat_interval
+        )
         self.init_queues()
         return self
 
