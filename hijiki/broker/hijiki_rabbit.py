@@ -9,9 +9,10 @@ from hijiki.decorator.worker import Worker
 
 
 class HijikiQueueExchange():
-    def __init__(self, name, exchange_name):
+    def __init__(self, name, exchange_name, routing_key="*"):
         self.name = name
         self.exchange_name = exchange_name
+        self.routing_key = routing_key
 
 
 class HijikiRabbit():
@@ -88,11 +89,10 @@ class HijikiRabbit():
                 self.callbacks[name + "_dlq"] = []
 
             logger.debug("Setting up %s" % name)
-            routing_key = "*"
 
             task_exchange = Exchange(f'{q.exchange_name}', type='topic')
             task_exchange_dlq = Exchange(f'{q.exchange_name}_dlq', type='topic')
-
+            routing_key = q.routing_key
             queue = Queue(name,
                           task_exchange,
                           routing_key=routing_key,

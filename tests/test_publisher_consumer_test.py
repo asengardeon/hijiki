@@ -90,4 +90,13 @@ class TestPublisherConsumer(unittest.TestCase):
             len(self.runner.get_results())
         )
 
+    def test_consume_a_message_with_specific_routing_key(self):
+        self.runner.clear_results()
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}', routing_key='specific_routing_key')
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(len(self.runner.get_result_for_specific_routing_key()), 1)
+        self.assertEqual(len(self.runner.get_results_data()), 3) # são tres mensagens, pois a fila teste1_event recebe dois por causa do routing key coring "*"
+
 
