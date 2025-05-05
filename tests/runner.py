@@ -5,12 +5,14 @@ from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
 result_event_list = []
 result_data_list = []
 result_event_list_dlq = []
+result_data_list_dlq_for_specific_routing_key = []
 
 class Runner():
     qs = [
         HijikiQueueExchange('teste1', 'teste1_event'),
         HijikiQueueExchange('fila_erro', 'erro_event'),
         HijikiQueueExchange('without_dlq', 'without_dlq'),
+        HijikiQueueExchange('teste_with_specific_routing_key', 'teste1_event', routing_key='specific_routing_key'),
     ]
     gr = HijikiRabbit().with_queues_exchange(qs) \
         .with_username("user") \
@@ -52,6 +54,12 @@ class Runner():
         result_event_list.append('received event')
         raise Exception("falhou")
 
+    @gr.task(queue_name="teste_with_specific_routing_key")
+    def internal_consumer(data):
+        print(f"consumiu o valor:{data}")
+        result_data_list.append(data)
+        result_data_list_dlq_for_specific_routing_key.append('received event')
+
 
     def run(self):
         t = threading.Thread(target=self.gr.run)
@@ -71,6 +79,9 @@ class Runner():
 
     def get_results(self):
         return result_event_list
+
+    def get_result_for_specific_routing_key(self):
+        return result_data_list_dlq_for_specific_routing_key
 
     def get_results_data(self):
         return result_data_list
