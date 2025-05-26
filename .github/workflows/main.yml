@@ -52,7 +52,10 @@ jobs:
         curl -fsSL "$DOWNLOAD_URL" -o ~/.docker/cli-plugins/docker-compose
         chmod +x ~/.docker/cli-plugins/docker-compose
     - name: Start containers
-      run: ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
+      run: | 
+        ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
+        echo "Waiting for RabbitMQ to start..."
+        sleep 10 # wait for RabbitMQ to start
     - name: Run tests
       run: pipenv run python -m coverage run -m unittest tests/**
     - name: generate xml coverage

@@ -4,6 +4,7 @@ from unittest.mock import Mock
 from hijiki.consumer_data import ConsumerData
 from hijiki.message_broker import MessageBroker
 from hijiki.message_manager import MessageManager
+from hijiki.rabbitmq_broker import RabbitMQBroker
 
 
 def _other_message_mapper(event_name: str, data: str):

@@ -3,8 +3,8 @@ from hijiki.broker_config import BrokerConfig
 from hijiki.broker_type import BrokerType
 from hijiki.consumer_data import ConsumerData
 from hijiki.message_manager import MessageManager
-from hijiki.rabbitmq_adapter import RabbitMQConnection
 from hijiki.rabbitmq_broker import RabbitMQBroker
+from hijiki.rabbitmq_connection import ConnectionParameters
 
 
 class MessageManagerBuilder:
@@ -22,6 +22,7 @@ class MessageManagerBuilder:
         self.cluster_hosts = broker_config.get_cluster_hosts()
         self.consumers_data = []
         self.broker_type = BrokerType.RABBITMQ
+        self.manager = None
         MessageManagerBuilder._instance = self
 
     @staticmethod
@@ -59,13 +60,13 @@ class MessageManagerBuilder:
         return self
 
     def build(self) -> MessageManager:
-        connection = RabbitMQConnection(self.host, self.port, self.user, self.password, self.cluster_hosts)
-        broker = RabbitMQBroker(connection) if self.broker_type == BrokerType.RABBITMQ else None
+        connection_params = ConnectionParameters(self.host, self.port, self.user, self.password, self.cluster_hosts)
+        broker = RabbitMQBroker(connection_params) if self.broker_type == BrokerType.RABBITMQ else None
         if not broker:
             raise ValueError("BrokerType inválido ou não suportado.")
 
         manager = MessageManager(broker)
-        MessageManagerBuilder._instance = manager
+        MessageManagerBuilder.manager = manager
 
         # Registra automaticamente todos os consumidores informados
         for consumer_data in self.consumers_data:

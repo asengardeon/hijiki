@@ -5,6 +5,16 @@ from typing import Optional
 
 from hijiki.broker_config import BrokerConfig
 
+class ConnectionParameters:
+    def __init__(self, host: str, port: int, user: str, password: str, cluster_hosts: str):
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
+        self.cluster_hosts = cluster_hosts
+
+    def __str__(self):
+        return f"ConnectionParameters(host={self.host}, port={self.port}, user={self.user}, password=****, cluster_hosts={self.cluster_hosts})"
 
 class RabbitMQConnection:
     def __init__(self,
@@ -22,7 +32,6 @@ class RabbitMQConnection:
         self.cluster_hosts = cluster_hosts or BrokerConfig.get_cluster_hosts()
 
         self.connection = None
-        self.channel = None
 
     def __validate_host(self):
         if self.host and self.cluster_hosts:
@@ -41,14 +50,9 @@ class RabbitMQConnection:
     def connect(self):
         broker_url = self.get_broker_url()
         self.connection = pika.BlockingConnection(pika.URLParameters(broker_url))
-        self.channel = self.connection.channel()
         logging.info("Conectado ao RabbitMQ")
+        return self.connection
 
-
-    def get_channel(self):
-        if not self.channel or self.connection.is_closed:
-           self.connect()
-        return self.channel
 
     def ping(self):
         try:

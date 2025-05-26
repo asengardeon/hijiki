@@ -7,6 +7,7 @@ from hijiki.message_manager import MessageManager
 from hijiki.broker_type import BrokerType
 from unittest.mock import Mock, patch
 
+
 class TestMessageManagerBuilder(unittest.TestCase):
     @patch("hijiki.rabbitmq_broker.RabbitMQBroker", autospec=True)
     @patch("pika.BlockingConnection", spec=pika.BlockingConnection)

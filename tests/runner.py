@@ -8,12 +8,7 @@ result_event_list = []
 result_event_list_dlq = []
 
 class Runner():
-    # qs = [
-    #     ConsumerData('teste1', 'teste1_event'),
-    #     ConsumerData('fila_erro', 'erro_event'),
-    #     ConsumerData('without_dlq', 'without_dlq'),
-    # ]
-    gr = MessageManagerBuilder()\
+    gr = MessageManagerBuilder().get_instance()\
         .with_user("user") \
         .with_password("pwd") \
         .with_host("localhost") \

@@ -1,56 +1,43 @@
-
 import logging
-from typing import Callable, Optional
 
-from hijiki.rabbitmq_connection import RabbitMQConnection
+from hijiki.rabbitmq_connection import ConnectionParameters, RabbitMQConnection
 
 
 class RabbitMQAdapter:
-    def __init__(self, connection: RabbitMQConnection, queue: str, topic: Optional[str], handler: Callable):
-        self.connection = connection
-        self.queue = queue
-        self.topic = topic or queue
-        self.handler = handler
-        self.channel = connection.get_channel()
-        self.create_exchange_and_queue()
+    def __init__(self, connection_data: ConnectionParameters):
+        self.connection_data = connection_data
+        # Cria conexão e canal usando pika
+        self.connection = RabbitMQConnection(host=connection_data.host, port=connection_data.port,
+                                             user=connection_data.user, password=connection_data.password,
+                                             cluster_hosts=connection_data.cluster_hosts)
+        self.connection.connect()
+        self.rabbit_connection = self.connection.connection
 
-    def create_exchange_and_queue(self):
-        """Cria o Exchange do tipo 'topic', a fila como quorum e a DLQ."""
-        dlq_exchange = f"{self.queue}_DLQ"
-        dlq_queue = f"{self.queue}_DLQ"
 
-        self.channel.exchange_declare(exchange=dlq_exchange, exchange_type="fanout", durable=True)
-        self.channel.queue_declare(queue=dlq_queue, durable=True, arguments={"x-queue-type": "quorum"})
-        self.channel.queue_bind(queue=dlq_queue, exchange=dlq_exchange)
+    def close(self):
+        """Fecha o canal e a conexão com o RabbitMQ."""
+        if self.get_channel().is_open:
+            self.get_channel().close()
+        if self.rabbit_connection.is_open:
+            self.rabbit_connection.close()
 
-        queue_args = {
-            "x-queue-type": "quorum",
-            "x-dead-letter-exchange": dlq_exchange,
-            "x-delivery-limit": 10
-        }
-        self.channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
-
-        if self.topic:
-            self.channel.exchange_declare(exchange=self.topic, exchange_type='topic', durable=True)
-            self.channel.queue_bind(queue=self.queue, exchange=self.topic, routing_key="*")
-
-    def consume(self):
-        """Inicia o consumo da fila, utilizando o handler para processar as mensagens."""
-
-        def callback(ch, method, properties, body):
-            try:
-                self.handler(body)
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception as e:
-                logging.error(f"Erro ao processar mensagem: {e}")
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=True)
-
-        self.channel.basic_consume(queue=self.queue, on_message_callback=callback)
-        logging.info(f"Iniciando consumo na fila: {self.queue}")
-        self.channel.start_consuming()
 
     def stop_consuming(self):
-        """Interrompe o consumo da fila."""
-        if self.channel.is_open:
-            self.channel.stop_consuming()
+        if self.get_channel().is_open:
+            self.get_channel().stop_consuming()
             logging.info(f"Consumo interrompido para a fila: {self.queue}")
+            self.close()
+
+
+    def ping(self):
+        """Verifica se a conexão está ativa."""
+        try:
+            if self.rabbit_connection and self.rabbit_connection.is_open():
+                self.rabbit_connection.process_data_events()
+                return True
+        except Exception as e:
+            logging.error(f"Erro ao verificar a conexão: {e}")
+            return False
+
+    def get_channel(self):
+        return self.rabbit_connection.channel()
