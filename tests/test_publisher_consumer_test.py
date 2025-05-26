@@ -32,6 +32,20 @@ class TestPublisherConsumer(unittest.TestCase):
         yield
         self.assertEqual(len(self.runner.get_results()), 1)
 
+    def test_consume_a_message_with_other_mapper(self):
+        self.runner.clear_results()
+        def other_message_mapper(event_name: str, data: str):
+            return {"other_key": data, "event_name": event_name}
+
+        event_name = 'teste1_event'
+        message = '{"value": "This is the message"}'
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.pub.publish_message(event_name, message, message_mapper=other_message_mapper)
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(self.runner.get_results_data(), [
+            {"other_key": message, "event_name": event_name}
+        ])
+
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
@@ -79,5 +93,14 @@ class TestPublisherConsumer(unittest.TestCase):
             self.NUMBER_OF_QUEUED_MESSAGES * DLQ_RETRY_NUMBER,
             len(self.runner.get_results())
         )
+
+    def test_consume_a_message_with_specific_routing_key(self):
+        self.runner.clear_results()
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}')
+        self.pub.publish_message('teste1_event', '{"value": "This is the message"}', routing_key='specific_routing_key')
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(len(self.runner.get_result_for_specific_routing_key()), 1)
+        self.assertEqual(len(self.runner.get_results_data()), 3) # são tres mensagens, pois a fila teste1_event recebe dois por causa do routing key coring "*"
 
 
