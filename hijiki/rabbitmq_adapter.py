@@ -7,9 +7,7 @@ class RabbitMQAdapter:
     def __init__(self, connection_data: ConnectionParameters):
         self.connection_data = connection_data
         # Cria conexão e canal usando pika
-        self.connection = RabbitMQConnection(host=connection_data.host, port=connection_data.port,
-                                             user=connection_data.user, password=connection_data.password,
-                                             cluster_hosts=connection_data.cluster_hosts)
+        self.connection = RabbitMQConnection(connection_data)
         self.connection.connect()
         self.rabbit_connection = self.connection.connection
 

@@ -6,8 +6,8 @@ from hijiki.consumer_data import ConsumerData
 def sample_handler(message):
     print(f"Received message: {message}")
 
-manager = (MessageManagerBuilder()
-            .with_broker_type(BrokerType.RABBITMQ)
+manager = (MessageManagerBuilder().get_instance()
+           .with_broker_type(BrokerType.RABBITMQ)
            .with_host("localhost")
            .with_port(5672)
            .with_user("guest")

@@ -1,4 +1,5 @@
-# Biblioteca de Gerenciamento de Mensagens com RabbitMQ
+# HIJIKI
+## Biblioteca de Gerenciamento de Mensagens com RabbitMQ
 
 Este projeto fornece uma abstração para facilitar o uso do RabbitMQ em aplicações Python, incluindo suporte para FastAPI e uso puro em Python.
 
@@ -97,6 +98,20 @@ manager = (builder.with_host("localhost")
 - with_heartbeat(heartbeat: int): Define o tempo de heartbeat.  
 - with_cluster_hosts(cluster_hosts: str): Define múltiplos hosts para conexão em cluster.  
 
+## 📝 Licença
 
+Esse projeto está sob a licença MIT.
 
+---
 
+## 🤝 Contribuição
+
+Pull requests são bem-vindos! Para maiores detalhes leia as guidelines no [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+---
+
+## 📫 Contato
+
+Em caso de dúvidas, abra uma issue ou envie um e-mail para: [seu@email.com]
+
+---

@@ -23,6 +23,7 @@ class MessageManagerBuilder:
         self.consumers_data = []
         self.broker_type = BrokerType.RABBITMQ
         self.manager = None
+        self.heartbeat_interval = 60 # 60 é o tempo, em segundos, padrão do RabbitMQ desde a versão 3.3.5
         MessageManagerBuilder._instance = self
 
     @staticmethod
@@ -59,8 +60,15 @@ class MessageManagerBuilder:
         self.broker_type = broker_type
         return self
 
+    def with_heartbeat_interval(self, heartbeat_interval: int):
+        self.heartbeat_interval = heartbeat_interval
+        return self
+
     def build(self) -> MessageManager:
-        connection_params = ConnectionParameters(self.host, self.port, self.user, self.password, self.cluster_hosts)
+        extra_params = {
+            'heartbeat': self.heartbeat_interval
+        }
+        connection_params = ConnectionParameters(self.host, self.port, self.user, self.password, self.cluster_hosts, extra_connection_params=extra_params)
         broker = RabbitMQBroker(connection_params) if self.broker_type == BrokerType.RABBITMQ else None
         if not broker:
             raise ValueError("BrokerType inválido ou não suportado.")
