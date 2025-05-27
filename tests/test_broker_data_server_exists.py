@@ -1,8 +1,5 @@
 import os
 import unittest
-
-from celery.worker.control import heartbeat
-
 from hijiki.rabbitmq_connection import RabbitMQConnection, ConnectionParameters
 
 
