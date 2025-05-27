@@ -61,7 +61,7 @@ class TestPublisherConsumer(unittest.TestCase):
 
     def test_consume_a_message_failed_with_auto_ack_dont_go_to_DLQ(self):
         self.runner.clear_results()
-        self.runner.gr.consumers["fila_erro"].auto_ack = False
+        self.runner.gr.consumers["fila_erro"].auto_ack = True
         try:
             time.sleep(SECS_TO_AWAIT_BROKER)
             self.runner.publish_message('erro_event', '{"value": "This is the message"}')

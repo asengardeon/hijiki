@@ -20,12 +20,16 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
 
     def create_exchange_and_queue(self):
         channel = self.get_channel()
+        queue_args = {
+            "x-queue-type": "quorum",
+            "x-delivery-limit": 10
+        }
         if self.create_dlq:
             dlq_exchange = f"{self.queue}_dlq_event" if not self.queue.endswith("_dlq") else f"{self.queue}_event"
             dlq_queue = f"{self.queue}_dlq" if not self.queue.endswith("_dlq") else self.queue
 
             channel.exchange_declare(exchange=dlq_exchange, exchange_type="topic", durable=True)
-            channel.queue_declare(queue=dlq_queue, durable=True, arguments={"x-queue-type": "quorum"})
+            channel.queue_declare(queue=dlq_queue, durable=True, arguments=queue_args)
             channel.queue_bind(queue=dlq_queue, exchange=dlq_exchange)
 
             queue_args = {
@@ -35,9 +39,6 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
             }
             channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
         else:
-            queue_args = {
-                "x-queue-type": "quorum"
-            }
             channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
 
         if self.topic:
