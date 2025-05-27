@@ -15,22 +15,30 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
         self.auto_ack = consumer_data.auto_ack
         self.routing_key = consumer_data.routing_key if consumer_data.routing_key else "*"
         self._consumer_thread = None
+        self.create_dlq = consumer_data.create_dlq
 
 
     def create_exchange_and_queue(self):
-        dlq_exchange = f"{self.queue}_DLQ"
-        dlq_queue = f"{self.queue}_DLQ"
         channel = self.get_channel()
-        channel.exchange_declare(exchange=dlq_exchange, exchange_type="fanout", durable=True)
-        channel.queue_declare(queue=dlq_queue, durable=True, arguments={"x-queue-type": "quorum"})
-        channel.queue_bind(queue=dlq_queue, exchange=dlq_exchange)
+        if self.create_dlq:
+            dlq_exchange = f"{self.queue}_dlq_event" if not self.queue.endswith("_dlq") else f"{self.queue}_event"
+            dlq_queue = f"{self.queue}_dlq" if not self.queue.endswith("_dlq") else self.queue
 
-        queue_args = {
-            "x-queue-type": "quorum",
-            "x-dead-letter-exchange": dlq_exchange,
-            "x-delivery-limit": 10
-        }
-        channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
+            channel.exchange_declare(exchange=dlq_exchange, exchange_type="topic", durable=True)
+            channel.queue_declare(queue=dlq_queue, durable=True, arguments={"x-queue-type": "quorum"})
+            channel.queue_bind(queue=dlq_queue, exchange=dlq_exchange)
+
+            queue_args = {
+                "x-queue-type": "quorum",
+                "x-dead-letter-exchange": dlq_exchange,
+                "x-delivery-limit": 10
+            }
+            channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
+        else:
+            queue_args = {
+                "x-queue-type": "quorum"
+            }
+            channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
 
         if self.topic:
             channel.exchange_declare(exchange=self.topic, exchange_type='topic', durable=True)
