@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class MessageBroker(ABC):
     @abstractmethod
-    def publish(self, topic: str, message: str):
+    def publish(self, topic: str, message: str, routing_key: str = 'x', message_mapper=None):
         pass
 
     @abstractmethod

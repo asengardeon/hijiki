@@ -14,7 +14,7 @@ class TestMessageManagerBuilder(unittest.TestCase):
     def test_build_message_manager(self, mock_broker, mock_pika):
         mock_broker.return_value = Mock()
         mock_pika.return_value = Mock()
-        builder = (MessageManagerBuilder.get_instance()
+        builder = (MessageManagerBuilder()
                    .with_broker_type(BrokerType.RABBITMQ)
                    .with_host("localhost")
                    .with_port(5672)

@@ -8,7 +8,7 @@ from hijiki.rabbitmq_connection import ConnectionParameters
 
 
 class MessageManagerBuilder:
-    _instance = None  # Instância única do MessageManager
+    _instance = None  # Instância única do MessageManagerBuilder
 
     def __init__(self, recreate=False):
         if MessageManagerBuilder._instance is not None and not recreate:
@@ -22,9 +22,10 @@ class MessageManagerBuilder:
         self.cluster_hosts = broker_config.get_cluster_hosts()
         self.consumers_data = []
         self.broker_type = BrokerType.RABBITMQ
-        self.manager = None
         self.heartbeat_interval = 60 # 60 é o tempo, em segundos, padrão do RabbitMQ desde a versão 3.3.5
+        self.manager = None
         MessageManagerBuilder._instance = self
+        self.possible_consumers = []  # Lista de consumidores via decorator que podem ser registrados posteriormente.
 
     @staticmethod
     def get_instance(recreate=False):
@@ -64,6 +65,9 @@ class MessageManagerBuilder:
         self.heartbeat_interval = heartbeat_interval
         return self
 
+    def add_possible_consumer(self, consumer_data: ConsumerData):
+        self.possible_consumers.append(consumer_data)
+
     def build(self) -> MessageManager:
         extra_params = {
             'heartbeat': self.heartbeat_interval
@@ -73,11 +77,18 @@ class MessageManagerBuilder:
         if not broker:
             raise ValueError("BrokerType inválido ou não suportado.")
 
-        manager = MessageManager(broker)
-        MessageManagerBuilder.manager = manager
+        if not MessageManagerBuilder._instance.manager:
+            # Cria uma nova instância do MessageManager se não existir
+            manager = MessageManager(broker)
+            MessageManagerBuilder._instance.manager= manager
+
+        # Registra automaticamente todos os consumidores informados
+        while len(self.possible_consumers) > 0:
+            c = self.possible_consumers.pop(0)
+            MessageManagerBuilder.get_instance().manager.create_consumer(c)
 
         # Registra automaticamente todos os consumidores informados
         for consumer_data in self.consumers_data:
-            manager.create_consumer(consumer_data)
+            MessageManagerBuilder.get_instance().manager.create_consumer(consumer_data)
 
-        return manager
+        return MessageManagerBuilder.get_instance().manager

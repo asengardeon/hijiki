@@ -4,7 +4,7 @@ from unittest.mock import Mock
 from hijiki.consumer_data import ConsumerData
 from hijiki.message_broker import MessageBroker
 from hijiki.message_manager import MessageManager
-from hijiki.rabbitmq_broker import RabbitMQBroker
+import json
 
 
 def _other_message_mapper(event_name: str, data: str):
@@ -20,13 +20,17 @@ class TestMessageManager(unittest.TestCase):
         topic = "test_topic"
         message = "test_message"
         self.manager.publish(topic, message)
-        self.broker_mock.publish.assert_called_with(topic, {'value': 'test_message'})
+        self.broker_mock.publish.assert_called_with(topic, json.dumps({'value': 'test_message'}), 'x')
 
     def test_consume_a_message_with_other_mapper(self):
         event_name = 'teste1_event'
         message = "This is the message"
         self.manager.publish(event_name, message, message_mapper=_other_message_mapper)
-        self.broker_mock.publish.assert_called_with(event_name, _other_message_mapper(event_name, message))
+        self.broker_mock.publish.assert_called_with(
+            event_name,
+            json.dumps(_other_message_mapper(event_name, message)),  # <- Aqui!
+            'x'
+        )
 
     def test_create_consumer(self):
         queue = "test_queue"

@@ -45,9 +45,9 @@ class TestBrokerPing(unittest.TestCase):
             .with_host("localhost") \
             .with_port(5672) \
             .build()
-        consumer_data = ConsumerData("test_queue", "test_topic", handler=self.fail_ping_handler, dlq_handler=self.fail_ping_handler_dlq())
+        consumer_data = ConsumerData("test_queue", "test_topic", handler=self.fail_ping_handler,
+                                     dlq_handler=self.fail_ping_handler_dlq())
         manager.create_consumer(consumer_data)
         for consumer in manager.broker.consumers.values():
             consumer.connection = mock_pika
-        yield
         self.assertFalse(manager.is_alive())

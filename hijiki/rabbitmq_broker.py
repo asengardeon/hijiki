@@ -1,10 +1,8 @@
 
 import logging
 
-import pika
-
-from hijiki.message_broker import MessageBroker
 from hijiki.consumer_data import ConsumerData
+from hijiki.message_broker import MessageBroker
 from hijiki.rabbitmq_consumer_adapter import ConsumerRabbitMQAdapter
 from hijiki.rabbitmq_publisher_adapter import PublisherRabbitMQAdapter
 
@@ -13,14 +11,14 @@ class RabbitMQBroker(MessageBroker):
     def __init__(self, connection_params):
         self.connection_params = connection_params
         self.consumers = {}
-        self.publisher = PublisherRabbitMQAdapter(connection_params)
 
-    def publish(self, topic: str, message: str):
-        self.publisher.publish(topic, message)
+    def publish(self, topic: str, message: str, routing_key: str = 'x', message_mapper=None):
+        publisher = PublisherRabbitMQAdapter(self.connection_params)
+        publisher.publish(topic, message, routing_key)
 
     def create_consumer(self, consumer_data: ConsumerData):
         if consumer_data.handler:
-            adapter = ConsumerRabbitMQAdapter(self.connection_params, consumer_data.queue, consumer_data.topic, consumer_data.handler)
+            adapter = ConsumerRabbitMQAdapter(self.connection_params, consumer_data)
             self.consumers[consumer_data.queue] = adapter
             logging.info(f"Consumidor criado para a fila {consumer_data.queue} e tópico {consumer_data.topic or consumer_data.queue}")
             return adapter
