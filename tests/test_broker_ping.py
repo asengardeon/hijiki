@@ -25,6 +25,8 @@ class TestBrokerPing(unittest.TestCase):
         consumer_data = ConsumerData("test_queue", "test_topic", handler=self.fail_ping_handler,
                                      dlq_handler=self.fail_ping_handler_dlq())
         manager.create_consumer(consumer_data)
+        manager.start_consuming()
+
         for consumer in manager.broker.consumers.values():
             consumer.connection = mock_pika
         self.assertTrue(manager.is_alive())

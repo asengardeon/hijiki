@@ -25,7 +25,7 @@ class Runner():
         print(f"consumiu o valor:{data}")
         result_data_list.append(data)
         result_event_list.append('received event')
-    
+
     @consumer_handler(queue_name="teste1_dlq", create_dlq=False)
     def internal_consumer_dlq(data):
         print(f"consumiu o valor:{data}")
@@ -41,7 +41,7 @@ class Runner():
     def internal_consumer_erro_dlq(data):
         print(f"consumiu o valor:{data}")
         result_event_list_dlq.append('received event')
-    
+
     @consumer_handler(queue_name="without_dlq", topic="without_dlq", create_dlq=False)
     def internal_consumer_extra(data):
         print(f"consumiu o valor:{data}")

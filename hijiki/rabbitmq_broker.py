@@ -9,6 +9,7 @@ from hijiki.rabbitmq_publisher_adapter import PublisherRabbitMQAdapter
 
 class RabbitMQBroker(MessageBroker):
     def __init__(self, connection_params):
+        self.publisher = None
         self.connection_params = connection_params
         self.consumers = {}
 
@@ -37,5 +38,6 @@ class RabbitMQBroker(MessageBroker):
         result = True
         for consumer in self.consumers.values():
             result = result and consumer.ping()
-        result = result and self.publisher.ping()
+        publisher_result = self.publisher.ping() if self.publisher else True
+        result = result and publisher_result
         return result

@@ -52,6 +52,7 @@ class RabbitMQConnection:
 
     def connect(self):
         broker_url = self.get_broker_url()
+        logging.info(f"Conectando ao RabbitMQ com a URL: {broker_url}")
         self.connection = pika.BlockingConnection(pika.URLParameters(broker_url))
         logging.info("Conectado ao RabbitMQ")
         return self.connection
