@@ -6,7 +6,7 @@ from hijiki.decorator import consumer_handler
 from hijiki.consumer_data import ConsumerData
 
 app = FastAPI()
-manager = (MessageManagerBuilder()
+manager = (MessageManagerBuilder.get_instance()
            .with_broker_type(BrokerType.RABBITMQ)
            .with_host("localhost")
            .with_port(5672)

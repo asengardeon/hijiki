@@ -1,7 +1,5 @@
 import logging
 
-from celery.bin.result import result
-
 from hijiki.rabbitmq_connection import ConnectionParameters, RabbitMQConnection
 
 
