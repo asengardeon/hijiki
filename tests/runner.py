@@ -1,6 +1,7 @@
-import threading
+from typing import Callable, Optional
 
-from hijiki.broker.hijiki_rabbit import HijikiQueueExchange, HijikiRabbit
+from hijiki.decorators.decorator import consumer_handler
+from hijiki.manager.message_manager_builder import MessageManagerBuilder
 
 result_event_list = []
 result_data_list = []
@@ -8,53 +9,47 @@ result_event_list_dlq = []
 result_data_list_dlq_for_specific_routing_key = []
 
 class Runner():
-    qs = [
-        HijikiQueueExchange('teste1', 'teste1_event'),
-        HijikiQueueExchange('fila_erro', 'erro_event'),
-        HijikiQueueExchange('without_dlq', 'without_dlq'),
-        HijikiQueueExchange('teste_with_specific_routing_key', 'teste1_event', routing_key='specific_routing_key'),
-    ]
-    gr = HijikiRabbit().with_queues_exchange(qs) \
-        .with_username("user") \
-        .with_password("pwd") \
-        .with_host("localhost") \
-        .with_port(5672) \
-        .with_heartbeat_interval(30) \
-        .build()
-
-    threads = []
+    def __init__(self):
+        self.gr = (MessageManagerBuilder.get_instance()\
+            .with_user("user")\
+            .with_password("pwd")\
+            .with_host("localhost")\
+            .with_port(5672)
+            .build())
+        self.threads = []
 
 
-    @gr.task(queue_name="teste1")
+    @consumer_handler(queue_name="teste1")
     def internal_consumer(data):
         print(f"consumiu o valor:{data}")
         result_data_list.append(data)
         result_event_list.append('received event')
 
-    @gr.task(queue_name="teste1_dlq")
+    @consumer_handler(queue_name="teste1_dlq", create_dlq=False)
     def internal_consumer_dlq(data):
         print(f"consumiu o valor:{data}")
         result_event_list_dlq.append('received event')
 
-    @gr.task(queue_name="fila_erro")
+    @consumer_handler(queue_name="fila_erro", topic="erro_event")
     def internal_consumer_erro(data):
         print(f"consumiu o valor:{data}")
         result_event_list.append('received event')
         raise Exception("falhou")
 
-    @gr.task(queue_name="fila_erro_dlq")
+    @consumer_handler(queue_name="fila_erro_dlq", topic="fila_erro_dlq_event", create_dlq=False)
     def internal_consumer_erro_dlq(data):
         print(f"consumiu o valor:{data}")
         result_event_list_dlq.append('received event')
 
-    @gr.task(queue_name="without_dlq")
+    @consumer_handler(queue_name="without_dlq", topic="without_dlq", create_dlq=False)
     def internal_consumer_extra(data):
         print(f"consumiu o valor:{data}")
         result_data_list.append(data)
         result_event_list.append('received event')
         raise Exception("falhou")
 
-    @gr.task(queue_name="teste_with_specific_routing_key")
+    @consumer_handler(queue_name="teste_with_specific_routing_key", topic='teste1_event',
+                      routing_key="specific_routing_key")
     def internal_consumer(data):
         print(f"consumiu o valor:{data}")
         result_data_list.append(data)
@@ -62,12 +57,11 @@ class Runner():
 
 
     def run(self):
-        t = threading.Thread(target=self.gr.run)
-        self.threads.append(t)
-        t.start()
+        self.gr.start_consuming()
+
 
     def stop(self):
-        self.gr.terminate()
+        self.gr.stop_consuming()
 
     def __del__(self):
         super()
@@ -76,6 +70,7 @@ class Runner():
         result_event_list.clear()
         result_data_list.clear()
         result_event_list_dlq.clear()
+        result_data_list_dlq_for_specific_routing_key.clear()
 
     def get_results(self):
         return result_event_list
@@ -91,3 +86,6 @@ class Runner():
 
     def set_auto_ack(self, auto_ack: bool):
         self.gr.with_auto_ack(auto_ack)
+
+    def publish_message(self, event_name, message, routing_key="x", message_mapper: Optional[Callable[[str, str], dict]] = None):
+        self.gr.publish(event_name, message, routing_key=routing_key, message_mapper=message_mapper)
