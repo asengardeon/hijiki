@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from hijiki.broker_type import BrokerType
-from hijiki.consumer_data import ConsumerData
-from hijiki.message_manager_builder import MessageManagerBuilder
+from hijiki.config.broker_type import BrokerType
+from hijiki.config.consumer_data import ConsumerData
+from hijiki.manager.message_manager_builder import MessageManagerBuilder
 
 
 class TestMessageManagerBuilder(unittest.TestCase):
 
-    @patch("hijiki.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
+    @patch("hijiki.adapters.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
     @patch("pika.BlockingConnection", spec=True)
     def test_build_throws_error_with_invalid_broker_type(self, mock_pika, mock_adapter):
         mock_adapter.return_value = Mock()
@@ -17,15 +17,15 @@ class TestMessageManagerBuilder(unittest.TestCase):
         with self.assertRaises(ValueError):
             builder.build()
 
-    @patch("hijiki.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
+    @patch("hijiki.adapters.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
     def test_singleton_instance_logic(self, mock_adapter):
         mock_adapter.return_value = Mock()
         instance1 = MessageManagerBuilder.get_instance()
         instance2 = MessageManagerBuilder.get_instance()
         self.assertIs(instance1, instance2)
 
-    @patch("hijiki.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
-    @patch("hijiki.rabbitmq_connection.ConnectionParameters", spec=True)
+    @patch("hijiki.adapters.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
+    @patch("hijiki.connection.rabbitmq_connection.ConnectionParameters", spec=True)
     def test_with_broker_type_rabbitmq_creates_rabbitmq_broker(self, mock_connection_params, mock_adapter):
         mock_adapter.return_value = Mock()
         mock_connection_params.return_value = Mock()
@@ -34,8 +34,8 @@ class TestMessageManagerBuilder(unittest.TestCase):
         self.assertIsNotNone(manager.broker)
         self.assertEqual(manager.broker.__class__.__name__, "RabbitMQBroker")
 
-    @patch("hijiki.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
-    @patch("hijiki.rabbitmq_connection.ConnectionParameters", spec=True)
+    @patch("hijiki.adapters.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
+    @patch("hijiki.connection.rabbitmq_connection.ConnectionParameters", spec=True)
     def test_with_consumers_registers_all_consumers(self, mock_connection_params, mock_adapter):
         mock_adapter.return_value = Mock()
         mock_connection_params.return_value = Mock()

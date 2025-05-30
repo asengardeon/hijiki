@@ -1,4 +1,4 @@
-from hijiki.consumer_data import ConsumerData
+from hijiki.config.consumer_data import ConsumerData
 
 from abc import ABC, abstractmethod
 

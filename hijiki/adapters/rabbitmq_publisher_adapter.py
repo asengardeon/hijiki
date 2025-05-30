@@ -3,8 +3,8 @@ from typing import Optional
 
 import pika  # Usando a biblioteca pika diretamente
 
-from hijiki.rabbitmq_adapter import RabbitMQAdapter
-from hijiki.rabbitmq_connection import ConnectionParameters
+from hijiki.adapters.rabbitmq_adapter import RabbitMQAdapter
+from hijiki.connection.rabbitmq_connection import ConnectionParameters
 
 
 class PublisherRabbitMQAdapter(RabbitMQAdapter):

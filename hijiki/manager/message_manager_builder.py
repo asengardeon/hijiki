@@ -1,10 +1,10 @@
 
-from hijiki.broker_config import BrokerConfig
-from hijiki.broker_type import BrokerType
-from hijiki.consumer_data import ConsumerData
-from hijiki.message_manager import MessageManager
-from hijiki.rabbitmq_broker import RabbitMQBroker
-from hijiki.rabbitmq_connection import ConnectionParameters
+from hijiki.config.broker_config import BrokerConfig
+from hijiki.config.broker_type import BrokerType
+from hijiki.config.consumer_data import ConsumerData
+from hijiki.manager.message_manager import MessageManager
+from hijiki.adapters.rabbitmq_broker import RabbitMQBroker
+from hijiki.connection.rabbitmq_connection import ConnectionParameters
 
 
 class MessageManagerBuilder:

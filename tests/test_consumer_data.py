@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock
 
-from hijiki.consumer_data import ConsumerData
+from hijiki.config.consumer_data import ConsumerData
 
 
 class TestConsumerData(unittest.TestCase):

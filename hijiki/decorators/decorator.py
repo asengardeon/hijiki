@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
-from hijiki.consumer_data import ConsumerData
-from hijiki.message_manager_builder import MessageManagerBuilder
+from hijiki.config.consumer_data import ConsumerData
+from hijiki.manager.message_manager_builder import MessageManagerBuilder
 
 
 def consumer_handler(queue_name: str, topic: Optional[str] = None, routing_key: Optional[str] = None,

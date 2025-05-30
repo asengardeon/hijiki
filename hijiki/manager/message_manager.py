@@ -2,8 +2,8 @@
 import json
 from typing import Callable, Optional
 
-from hijiki.message_broker import MessageBroker
-from hijiki.consumer_data import ConsumerData
+from hijiki.ports.message_broker import MessageBroker
+from hijiki.config.consumer_data import ConsumerData
 import logging
 
 

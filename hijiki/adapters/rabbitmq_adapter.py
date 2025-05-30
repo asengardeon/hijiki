@@ -1,6 +1,6 @@
 import logging
 
-from hijiki.rabbitmq_connection import ConnectionParameters, RabbitMQConnection
+from hijiki.connection.rabbitmq_connection import ConnectionParameters, RabbitMQConnection
 
 
 class RabbitMQAdapter:

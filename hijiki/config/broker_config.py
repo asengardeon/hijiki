@@ -1,5 +1,5 @@
 import os
-from hijiki.broker_env_vars import BrokerEnvVars
+from hijiki.config.broker_env_vars import BrokerEnvVars
 
 class BrokerConfig:
     @staticmethod

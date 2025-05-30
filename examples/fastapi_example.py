@@ -1,9 +1,9 @@
 # fastapi_example.py
 from fastapi import FastAPI
-from hijiki.message_manager_builder import MessageManagerBuilder
-from hijiki.broker_type import BrokerType
-from hijiki.decorator import consumer_handler
-from hijiki.consumer_data import ConsumerData
+from hijiki.manager.message_manager_builder import MessageManagerBuilder
+from hijiki.config.broker_type import BrokerType
+from hijiki.decorators.decorator import consumer_handler
+from hijiki.config.consumer_data import ConsumerData
 
 app = FastAPI()
 manager = (MessageManagerBuilder.get_instance()

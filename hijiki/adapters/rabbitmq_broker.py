@@ -1,10 +1,10 @@
 
 import logging
 
-from hijiki.consumer_data import ConsumerData
-from hijiki.message_broker import MessageBroker
-from hijiki.rabbitmq_consumer_adapter import ConsumerRabbitMQAdapter
-from hijiki.rabbitmq_publisher_adapter import PublisherRabbitMQAdapter
+from hijiki.config.consumer_data import ConsumerData
+from hijiki.ports.message_broker import MessageBroker
+from hijiki.adapters.rabbitmq_consumer_adapter import ConsumerRabbitMQAdapter
+from hijiki.adapters.rabbitmq_publisher_adapter import PublisherRabbitMQAdapter
 
 
 class RabbitMQBroker(MessageBroker):

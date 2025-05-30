@@ -1,6 +1,6 @@
 import os
 import unittest
-from hijiki.rabbitmq_connection import RabbitMQConnection, ConnectionParameters
+from hijiki.connection.rabbitmq_connection import RabbitMQConnection, ConnectionParameters
 
 
 class TestRabbitMQConnection(unittest.TestCase):

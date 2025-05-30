@@ -1,9 +1,9 @@
 import logging
 import threading
 
-from hijiki.consumer_data import ConsumerData
-from hijiki.rabbitmq_adapter import RabbitMQAdapter
-from hijiki.rabbitmq_connection import ConnectionParameters
+from hijiki.config.consumer_data import ConsumerData
+from hijiki.adapters.rabbitmq_adapter import RabbitMQAdapter
+from hijiki.connection.rabbitmq_connection import ConnectionParameters
 
 
 class ConsumerRabbitMQAdapter(RabbitMQAdapter):

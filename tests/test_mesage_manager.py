@@ -1,9 +1,9 @@
 import unittest
 from unittest.mock import Mock
 
-from hijiki.consumer_data import ConsumerData
-from hijiki.message_broker import MessageBroker
-from hijiki.message_manager import MessageManager
+from hijiki.config.consumer_data import ConsumerData
+from hijiki.ports.message_broker import MessageBroker
+from hijiki.manager.message_manager import MessageManager
 import json
 
 

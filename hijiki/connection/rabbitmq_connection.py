@@ -3,7 +3,7 @@ import logging
 import pika
 from typing import Optional
 
-from hijiki.broker_config import BrokerConfig
+from hijiki.config.broker_config import BrokerConfig
 
 
 class ConnectionParameters:

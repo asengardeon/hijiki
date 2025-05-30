@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 
-from hijiki.decorator import consumer_handler
-from hijiki.message_manager_builder import MessageManagerBuilder
+from hijiki.decorators.decorator import consumer_handler
+from hijiki.manager.message_manager_builder import MessageManagerBuilder
 
 result_event_list = []
 result_data_list = []

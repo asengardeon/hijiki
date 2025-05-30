@@ -3,8 +3,8 @@ from unittest.mock import patch, Mock
 
 import pika
 
-from hijiki.consumer_data import ConsumerData
-from hijiki.message_manager_builder import MessageManagerBuilder
+from hijiki.config.consumer_data import ConsumerData
+from hijiki.manager.message_manager_builder import MessageManagerBuilder
 
 DLQ_RETRY_NUMsBER = 11 # At eleven interaction the message goes to the Dead Letter Queue
 SECS_TO_AWAIT_BROKER = 5
