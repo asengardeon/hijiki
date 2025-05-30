@@ -43,6 +43,11 @@ class MessageManager:
             if hasattr(consumer_data, 'stop_consuming') and callable(getattr(consumer_data, 'stop_consuming')):
                 consumer_data.stop_consuming()
 
+    def define_broker(self, broker: MessageBroker):
+        """Define o broker a ser usado pelo MessageManager."""
+        self.broker = broker
+        logging.info(f"Broker definido: {broker}")
+
     def is_alive(self):
         try:
            return self.broker.ping()

@@ -11,21 +11,26 @@ class MessageManagerBuilder:
     _instance = None  # Instância única do MessageManagerBuilder
 
     def __init__(self, recreate=False):
-        if MessageManagerBuilder._instance is not None and not recreate:
-            raise ValueError("Apenas uma instância do MessageManager pode existir.")
-
-        broker_config = BrokerConfig()
-        self.host = broker_config.get_host()
-        self.port = broker_config.get_port()
-        self.user = broker_config.get_user()
-        self.password = broker_config.get_password()
-        self.cluster_hosts = broker_config.get_cluster_hosts()
-        self.consumers_data = []
-        self.broker_type = BrokerType.RABBITMQ
-        self.heartbeat_interval = 60 # 60 é o tempo, em segundos, padrão do RabbitMQ desde a versão 3.3.5
-        self.manager = None
-        MessageManagerBuilder._instance = self
-        self.possible_consumers = []  # Lista de consumidores via decorator que podem ser registrados posteriormente.
+        if MessageManagerBuilder._instance is not None:
+            if not recreate:
+                # Se for para recriar, limpa a instância anterior
+                raise ValueError("Apenas uma instância do MessageManager pode existir.")
+            else:
+                # Se for para recriar, limpa a instância anterior
+                MessageManagerBuilder._instance = None
+        else:
+            broker_config = BrokerConfig()
+            self.host = broker_config.get_host()
+            self.port = broker_config.get_port()
+            self.user = broker_config.get_user()
+            self.password = broker_config.get_password()
+            self.cluster_hosts = broker_config.get_cluster_hosts()
+            self.consumers_data = []
+            self.broker_type = BrokerType.RABBITMQ
+            self.heartbeat_interval = 60 # 60 é o tempo, em segundos, padrão do RabbitMQ desde a versão 3.3.5
+            self.manager = None
+            MessageManagerBuilder._instance = self
+            self.possible_consumers = []  # Lista de consumidores via decorator que podem ser registrados posteriormente.
 
     @staticmethod
     def get_instance(recreate=False):
@@ -81,11 +86,12 @@ class MessageManagerBuilder:
             # Cria uma nova instância do MessageManager se não existir
             manager = MessageManager(broker)
             MessageManagerBuilder._instance.manager= manager
+        else:
+            MessageManagerBuilder._instance.manager.define_broker(broker)
 
         # Registra automaticamente todos os consumidores informados
-        while len(self.possible_consumers) > 0:
-            c = self.possible_consumers.pop(0)
-            MessageManagerBuilder.get_instance().manager.create_consumer(c)
+        for consumer_data in self.possible_consumers:
+            MessageManagerBuilder.get_instance().manager.create_consumer(consumer_data)
 
         # Registra automaticamente todos os consumidores informados
         for consumer_data in self.consumers_data:

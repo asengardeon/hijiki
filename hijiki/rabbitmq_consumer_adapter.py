@@ -30,7 +30,7 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
 
             channel.exchange_declare(exchange=dlq_exchange, exchange_type="topic", durable=True)
             channel.queue_declare(queue=dlq_queue, durable=True, arguments=queue_args)
-            channel.queue_bind(queue=dlq_queue, exchange=dlq_exchange)
+            channel.queue_bind(queue=dlq_queue, exchange=dlq_exchange, routing_key=self.routing_key)
 
             queue_args = {
                 "x-queue-type": "quorum",
@@ -56,12 +56,16 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
                     ch.basic_ack(delivery_tag=method.delivery_tag)
             except Exception as e:
                 logging.error(f"Erro ao processar mensagem: {e}")
-                ch.basic_reject(delivery_tag=method.delivery_tag, requeue=True)
+                if not self.auto_ack:
+                    ch.basic_reject(delivery_tag=method.delivery_tag, requeue=True)
 
-        channel = self.get_channel()
-        channel.basic_consume(queue=self.queue, on_message_callback=callback)
-        logging.info(f"Iniciando consumo na fila: {self.queue}")
-        channel.start_consuming()
+        try:
+            self.get_channel().basic_consume(queue=self.queue, on_message_callback=callback)
+            logging.info(f"Iniciando consumo na fila: {self.queue}")
+            self.get_channel().start_consuming()
+        except Exception as e:
+            logging.error(f"Erro ao iniciar consumo com dados do adapter: {self.connection_data}")
+            raise e
 
     def consume(self):
         self.connect()

@@ -1,4 +1,3 @@
-import threading
 from typing import Callable, Optional
 
 from hijiki.decorator import consumer_handler
@@ -12,9 +11,9 @@ result_data_list_dlq_for_specific_routing_key = []
 class Runner():
     def __init__(self):
         self.gr = (MessageManagerBuilder.get_instance()\
-            .with_user("user") \
-            .with_password("pwd") \
-            .with_host("localhost") \
+            .with_user("user")\
+            .with_password("pwd")\
+            .with_host("localhost")\
             .with_port(5672)
             .build())
         self.threads = []
