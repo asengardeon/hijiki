@@ -20,14 +20,21 @@ class TestPublisherConsumer(unittest.TestCase):
         cls.runner = Runner()
         cls.runner.run()
         cls.NUMBER_OF_QUEUED_MESSAGES = 2  # Já estava definido na linha anterior, só conferindo duplicidade
+        cls.test_count = 0
 
+    @classmethod
+    def tearDownClass(cls):
+        if cls.test_count != 8:
+            raise Exception(f"Expected 8 tests, but found {cls.test_count}. Please check the test cases.")
 
     def tearDown(self):
         self.runner.clear_results()
 
+
     def test_publish_a_message(self):
         self.runner.clear_results()
         self.runner.publish_message('teste1_event', '{"value": "This is the message"}')
+        TestPublisherConsumer.test_count += 1
 
     def test_consume_a_message(self):
         self.runner.clear_results()
@@ -35,6 +42,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.runner.publish_message('teste1_event', '{"value": "This is the message"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(len(self.runner.get_results()), 1)
+        TestPublisherConsumer.test_count += 1
 
     def test_consume_a_message_with_other_mapper(self):
         self.runner.clear_results()
@@ -51,6 +59,7 @@ class TestPublisherConsumer(unittest.TestCase):
         json_data = json.loads(data[0])
         self.assertEqual(json_data['other_key'], message)
         self.assertEqual(json_data['event_name'], event_name)
+        TestPublisherConsumer.test_count += 1
 
     def test_consume_a_message_failed(self):
         self.runner.clear_results()
@@ -58,6 +67,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.runner.publish_message('erro_event', '{"value": "This is the message"}')
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(DLQ_RETRY_NUMBER, len(self.runner.get_results()))
+        TestPublisherConsumer.test_count += 1
 
     def test_consume_a_message_failed_with_auto_ack_dont_go_to_DLQ(self):
         self.runner.clear_results()
@@ -69,6 +79,8 @@ class TestPublisherConsumer(unittest.TestCase):
             self.assertEqual(DLQ_DONT_RECEIVE_ERROR_WITH_AUTO_ACK_ENABLED, len(self.runner.get_results()))
         finally:
             self.runner.gr.consumers["fila_erro"].auto_ack = False
+        TestPublisherConsumer.test_count += 1
+
 
     def test_consume_a_message_dlq(self):
         self.runner.clear_results()
@@ -81,6 +93,7 @@ class TestPublisherConsumer(unittest.TestCase):
 
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.assertEqual(self.NUMBER_OF_QUEUED_MESSAGES, len(self.runner.get_results_dlq()))
+        TestPublisherConsumer.test_count += 1
 
     def test_consume_a_message_without_consumer_dlq(self):
         self.runner.clear_results()
@@ -95,6 +108,7 @@ class TestPublisherConsumer(unittest.TestCase):
             self.NUMBER_OF_QUEUED_MESSAGES * DLQ_RETRY_NUMBER,
             len(self.runner.get_results())
         )
+        TestPublisherConsumer.test_count += 1
 
     def test_consume_a_message_with_specific_routing_key(self):
         self.runner.clear_results()
@@ -105,3 +119,4 @@ class TestPublisherConsumer(unittest.TestCase):
         print(self.runner.get_result_for_specific_routing_key())
         self.assertEqual(1, len(self.runner.get_result_for_specific_routing_key()))
         self.assertEqual(3, len(self.runner.get_results_data())) # são tres mensagens, pois a fila teste1_event recebe dois por causa do routing key coring "*"
+        TestPublisherConsumer.test_count += 1
