@@ -33,7 +33,7 @@ jobs:
     - name: Update version in setup.py
       run: >-
         echo 'version is ${{ steps.version_number.outputs.VERSION_NUMBER }}' &&
-        sed -i 's/{{VERSION_PLACEHOLDER}}/1.0.${{github.run_number}}/g' setup.py
+        sed -i 's/{{VERSION_PLACEHOLDER}}/2.0.${{github.run_number}}/g' setup.py
     - name: Install Compose
       shell: bash
       run: |
