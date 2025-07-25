@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 from hijiki.config.broker_type import BrokerType
 from hijiki.config.consumer_data import ConsumerData
+from hijiki.manager.message_manager import MessageManager
 from hijiki.manager.message_manager_builder import MessageManagerBuilder
 
 
@@ -52,3 +53,20 @@ class TestMessageManagerBuilder(unittest.TestCase):
 
         self.assertIn("queue1", manager.consumers)
         self.assertIn("queue2", manager.consumers)
+
+    @patch("hijiki.adapters.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
+    @patch("hijiki.connection.rabbitmq_connection.ConnectionParameters", spec=True)
+    def test_recreate_builder_creates_new_instance_and_allows_new_manager_creation(self, mock_connection_params, mock_adapter):
+        mock_adapter.return_value = Mock()
+        mock_connection_params.return_value = Mock()
+
+        builder1 = MessageManagerBuilder.get_instance().with_broker_type(BrokerType.RABBITMQ)
+        manager1 = builder1.build()
+        
+        self.assertIsInstance(manager1, MessageManager)
+        
+        builder2 = MessageManagerBuilder.get_instance(recreate=True).with_broker_type(BrokerType.RABBITMQ)
+        manager2 = builder2.build()
+        
+        self.assertIsInstance(manager2, MessageManager)
+        self.assertIsNot(manager1, manager2)
