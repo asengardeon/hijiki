@@ -19,13 +19,15 @@ class RabbitMQAdapter:
     def stop_consuming(self):
         if self.channel.is_open:
             self.channel.close()
+        if self.rabbit_connection and self.rabbit_connection.is_open:
+            self.rabbit_connection.close()
 
 
     def ping(self):
         """Verifica se a conexão está ativa."""
         result = False
         try:
-            if self.rabbit_connection and self.rabbit_connection.is_open():
+            if self.rabbit_connection and self.rabbit_connection.is_open:
                 self.rabbit_connection.process_data_events()
                 result = True
         except Exception as e:
