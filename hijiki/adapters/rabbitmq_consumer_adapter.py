@@ -15,6 +15,7 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
         self.auto_ack = consumer_data.auto_ack
         self.routing_key = consumer_data.routing_key if consumer_data.routing_key else "*"
         self._consumer_thread = None
+        self._stop_event = threading.Event()
         self.create_dlq = consumer_data.create_dlq
 
 
@@ -58,6 +59,9 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
                 logging.error(f"Erro ao processar mensagem: {e}")
                 if not self.auto_ack:
                     ch.basic_reject(delivery_tag=method.delivery_tag, requeue=True)
+            finally:
+                if self._stop_event.is_set():
+                    self.get_channel().stop_consuming()
 
         try:
             self.get_channel().basic_consume(queue=self.queue, on_message_callback=callback)
@@ -68,6 +72,7 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
             raise e
 
     def consume(self):
+        self._stop_event.clear()
         self.connect()
         self.create_exchange_and_queue()
         """Inicia o consumo da fila em uma thread separada."""
@@ -77,6 +82,19 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
         self._consumer_thread = threading.Thread(target=self._consume, daemon=True)
         self._consumer_thread.start()
         logging.info(f"Thread de consumo iniciada para a fila: {self.queue}")
+    
 
+    def stop_consuming(self):
+        def _stop_consuming():
+            if self.get_channel().is_open:
+                logging.info(f"Parando consumo da fila: {self.queue}")
+                self.get_channel().stop_consuming()
 
+        if self._consumer_thread and self._consumer_thread.is_alive():
+            self._stop_event.set()
 
+            if self.rabbit_connection and self.rabbit_connection.is_open:
+                self.rabbit_connection.add_callback_threadsafe(_stop_consuming)
+
+            self._consumer_thread.join()
+            super().stop_consuming()
