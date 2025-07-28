@@ -77,6 +77,17 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
         self._consumer_thread = threading.Thread(target=self._consume, daemon=True)
         self._consumer_thread.start()
         logging.info(f"Thread de consumo iniciada para a fila: {self.queue}")
+    
 
+    def stop_consuming(self):
+        def _stop_consuming():
+            if self.get_channel().is_open:
+                logging.info(f"Parando consumo da fila: {self.queue}")
+                self.get_channel().stop_consuming()
 
+        if self._consumer_thread and self._consumer_thread.is_alive():
+            if self.rabbit_connection and self.rabbit_connection.is_open:
+                self.rabbit_connection.add_callback_threadsafe(_stop_consuming)
 
+            self._consumer_thread.join()
+            super().stop_consuming()
