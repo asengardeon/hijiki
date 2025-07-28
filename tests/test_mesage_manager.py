@@ -1,6 +1,5 @@
 import time
 import unittest
-import pytest
 from unittest.mock import Mock
 
 from hijiki.adapters.rabbitmq_broker import RabbitMQBroker
