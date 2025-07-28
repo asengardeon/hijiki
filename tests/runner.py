@@ -10,6 +10,42 @@ result_data_list_dlq_for_specific_routing_key = []
 
 class Runner():
     def __init__(self):
+        @consumer_handler(queue_name="teste1")
+        def internal_consumer(data):
+            print(f"consumiu o valor:{data}")
+            result_data_list.append(data)
+            result_event_list.append('received event')
+
+        @consumer_handler(queue_name="teste1_dlq", create_dlq=False)
+        def internal_consumer_dlq(data):
+            print(f"consumiu o valor:{data}")
+            result_event_list_dlq.append('received event')
+
+        @consumer_handler(queue_name="fila_erro", topic="erro_event")
+        def internal_consumer_erro(data):
+            print(f"consumiu o valor:{data}")
+            result_event_list.append('received event')
+            raise Exception("falhou")
+
+        @consumer_handler(queue_name="fila_erro_dlq", topic="fila_erro_dlq_event", create_dlq=False)
+        def internal_consumer_erro_dlq(data):
+            print(f"consumiu o valor:{data}")
+            result_event_list_dlq.append('received event')
+
+        @consumer_handler(queue_name="without_dlq", topic="without_dlq", create_dlq=False)
+        def internal_consumer_extra(data):
+            print(f"consumiu o valor:{data}")
+            result_data_list.append(data)
+            result_event_list.append('received event')
+            raise Exception("falhou")
+
+        @consumer_handler(queue_name="teste_with_specific_routing_key", topic='teste1_event',
+                        routing_key="specific_routing_key")
+        def internal_consumer(data):
+            print(f"consumiu o valor:{data}")
+            result_data_list.append(data)
+            result_data_list_dlq_for_specific_routing_key.append('received event')
+
         self.gr = (MessageManagerBuilder.get_instance()\
             .with_user("user")\
             .with_password("pwd")\
@@ -17,43 +53,6 @@ class Runner():
             .with_port(5672)
             .build())
         self.threads = []
-
-
-    @consumer_handler(queue_name="teste1")
-    def internal_consumer(data):
-        print(f"consumiu o valor:{data}")
-        result_data_list.append(data)
-        result_event_list.append('received event')
-
-    @consumer_handler(queue_name="teste1_dlq", create_dlq=False)
-    def internal_consumer_dlq(data):
-        print(f"consumiu o valor:{data}")
-        result_event_list_dlq.append('received event')
-
-    @consumer_handler(queue_name="fila_erro", topic="erro_event")
-    def internal_consumer_erro(data):
-        print(f"consumiu o valor:{data}")
-        result_event_list.append('received event')
-        raise Exception("falhou")
-
-    @consumer_handler(queue_name="fila_erro_dlq", topic="fila_erro_dlq_event", create_dlq=False)
-    def internal_consumer_erro_dlq(data):
-        print(f"consumiu o valor:{data}")
-        result_event_list_dlq.append('received event')
-
-    @consumer_handler(queue_name="without_dlq", topic="without_dlq", create_dlq=False)
-    def internal_consumer_extra(data):
-        print(f"consumiu o valor:{data}")
-        result_data_list.append(data)
-        result_event_list.append('received event')
-        raise Exception("falhou")
-
-    @consumer_handler(queue_name="teste_with_specific_routing_key", topic='teste1_event',
-                      routing_key="specific_routing_key")
-    def internal_consumer(data):
-        print(f"consumiu o valor:{data}")
-        result_data_list.append(data)
-        result_data_list_dlq_for_specific_routing_key.append('received event')
 
 
     def run(self):
