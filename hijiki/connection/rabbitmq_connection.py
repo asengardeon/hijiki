@@ -31,6 +31,7 @@ class RabbitMQConnection:
         self.password = connection_params.password if connection_params and connection_params.password else BrokerConfig.get_password()
         self.cluster_hosts = connection_params.cluster_hosts if connection_params and connection_params.cluster_hosts else BrokerConfig.get_cluster_hosts()
         self.extra_connection_params = connection_params.extra_connection_params if connection_params and connection_params.extra_connection_params else {}
+        self.use_secure_protocol = connection_params.use_secure_protocol if connection_params and connection_params.use_secure_protocol else False
         self.connection = None
 
     def __validate_host(self):
