@@ -25,14 +25,19 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
 
     def create_exchange_and_queue(self):
         channel = self.get_channel()
-        default_queue_args = { "x-delivery-limit": 10 }
         default_queue_type = "quorum"
+        default_queue_args_by_type = {
+            "quorum": { "x-delivery-limit": 10 },
+            "classic": {},
+            "stream": {},
+        }
+        queue_type = self.queue_type or default_queue_type
         queue_args = (
             self.custom_queue_args
             if self.custom_queue_args is not None
-            else default_queue_args
+            else default_queue_args_by_type.get(queue_type, {})
         )
-        queue_args["x-queue-type"] = self.queue_type or default_queue_type
+        queue_args["x-queue-type"] = queue_type
 
         default_exchange_type = "topic"
         exchange_type = self.exchange_type or default_exchange_type

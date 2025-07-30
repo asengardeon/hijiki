@@ -47,7 +47,7 @@ class Runner():
             result_data_list_dlq_for_specific_routing_key.append('received event')
 
         @consumer_handler(queue_name="with_direct_exchange", topic='with_direct_exchange_event',
-                        routing_key="direct_routing_key", exchange_type="direct")
+                        routing_key="direct_routing_key", exchange_type="direct", queue_type="classic")
         def internal_consumer(data):
             print(f"consumiu o valor:{data}")
             result_data_list.append(data)

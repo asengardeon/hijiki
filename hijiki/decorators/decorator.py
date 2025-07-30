@@ -5,8 +5,8 @@ from hijiki.manager.message_manager_builder import MessageManagerBuilder
 
 
 def consumer_handler(queue_name: str, topic: Optional[str] = None, routing_key: Optional[str] = None,
-                     create_dlq=True, exchange_type: Optional[str] = None, dlq_name: Optional[str] = None,
-                     dlx_name: Optional[str] = None) -> Callable:
+                     create_dlq=True, exchange_type: Optional[str] = None, queue_type: Optional[str] = None,
+                     dlq_name: Optional[str] = None, dlx_name: Optional[str] = None) -> Callable:
     def decorator(func: Callable):
         consumer_data = ConsumerData(
             queue=queue_name,
@@ -15,6 +15,7 @@ def consumer_handler(queue_name: str, topic: Optional[str] = None, routing_key: 
             routing_key=routing_key,
             create_dlq=create_dlq,
             exchange_type=exchange_type,
+            queue_type=queue_type,
             dlq_name=dlq_name,
             dlx_name=dlx_name
         )

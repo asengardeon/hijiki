@@ -121,7 +121,7 @@ class TestPublisherConsumer(unittest.TestCase):
         self.assertEqual(3, len(self.runner.get_results_data())) # são tres mensagens, pois a fila teste1_event recebe dois por causa do routing key coring "*"
         TestPublisherConsumer.test_count += 1
 
-    def test_consume_a_message_with_custom_exchange_type(self):
+    def test_consume_a_message_with_custom_exchange_and_queue_type(self):
         self.runner.clear_results()
         time.sleep(SECS_TO_AWAIT_BROKER)
         self.runner.publish_message('with_direct_exchange_event', '{"value": "This is the message"}',
