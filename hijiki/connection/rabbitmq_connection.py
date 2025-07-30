@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import quote
 
 import pika
 from typing import Optional
@@ -26,7 +27,7 @@ class RabbitMQConnection:
         """Inicializa a conexão com o RabbitMQ usando um objeto ConnectionParameters."""
         self.host = connection_params.host if connection_params and connection_params.host else BrokerConfig.get_host()
         self.port = connection_params.port if connection_params and connection_params.port else BrokerConfig.get_port()
-        self.virtual_host = f"/{connection_params.virtual_host}" if connection_params and connection_params.virtual_host else ""
+        self.virtual_host = f"/{quote(connection_params.virtual_host, safe='')}" if connection_params and connection_params.virtual_host else ""
         self.user = connection_params.user if connection_params and connection_params.user else BrokerConfig.get_user()
         self.password = connection_params.password if connection_params and connection_params.password else BrokerConfig.get_password()
         self.cluster_hosts = connection_params.cluster_hosts if connection_params and connection_params.cluster_hosts else BrokerConfig.get_cluster_hosts()
@@ -51,11 +52,8 @@ class RabbitMQConnection:
         protocol = "amqps" if self.use_secure_protocol else "amqp"
         if self.cluster_hosts:
             cluster = self.cluster_hosts.split(",")
-            urls = [f"{protocol}://{self.user}:{self.password}@{host}{url_connectio_params}" for host in cluster]
-            final_url = ";".join(urls)
-            if self.virtual_host:
-                final_url += f"{self.virtual_host}"
-            return final_url
+            urls = [f"{protocol}://{self.user}:{self.password}@{host}{self.virtual_host}{url_connectio_params}" for host in cluster]
+            return ";".join(urls)
         else:
             return f"{protocol}://{self.user}:{self.password}@{self.host}:{self.port}{self.virtual_host}{url_connectio_params}"
 
