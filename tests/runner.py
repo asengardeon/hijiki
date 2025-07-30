@@ -46,6 +46,13 @@ class Runner():
             result_data_list.append(data)
             result_data_list_dlq_for_specific_routing_key.append('received event')
 
+        @consumer_handler(queue_name="with_direct_exchange", topic='with_direct_exchange_event',
+                        routing_key="direct_routing_key", exchange_type="direct")
+        def internal_consumer(data):
+            print(f"consumiu o valor:{data}")
+            result_data_list.append(data)
+            result_event_list.append('received event')
+
         self.gr = (MessageManagerBuilder.get_instance()\
             .with_user("user")\
             .with_password("pwd")\
@@ -86,5 +93,5 @@ class Runner():
     def set_auto_ack(self, auto_ack: bool):
         self.gr.with_auto_ack(auto_ack)
 
-    def publish_message(self, event_name, message, routing_key="x", message_mapper: Optional[Callable[[str, str], dict]] = None):
-        self.gr.publish(event_name, message, routing_key=routing_key, message_mapper=message_mapper)
+    def publish_message(self, event_name, message, routing_key="x", message_mapper: Optional[Callable[[str, str], dict]] = None, exchange_type: Optional[str] = "topic"):
+        self.gr.publish(event_name, message, routing_key=routing_key, message_mapper=message_mapper, exchange_type=exchange_type)
