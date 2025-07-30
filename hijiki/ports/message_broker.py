@@ -1,10 +1,12 @@
+from typing import Optional
 from hijiki.config.consumer_data import ConsumerData
 
 from abc import ABC, abstractmethod
 
 class MessageBroker(ABC):
     @abstractmethod
-    def publish(self, topic: str, message: str, routing_key: str = 'x', message_mapper=None):
+    def publish(self, topic: str, message: str, routing_key: str = 'x', exchange_type: Optional[str] = "topic",
+                reply_to: Optional[str] = None):
         pass
 
     @abstractmethod

@@ -1,5 +1,6 @@
 
 import logging
+from typing import Optional
 
 from hijiki.config.consumer_data import ConsumerData
 from hijiki.ports.message_broker import MessageBroker
@@ -13,9 +14,10 @@ class RabbitMQBroker(MessageBroker):
         self.connection_params = connection_params
         self.consumers = {}
 
-    def publish(self, topic: str, message: str, routing_key: str = 'x', message_mapper=None):
+    def publish(self, topic: str, message: str, routing_key: str = 'x', exchange_type: Optional[str] = "topic",
+                reply_to: Optional[str] = None):
         publisher = PublisherRabbitMQAdapter(self.connection_params)
-        publisher.publish(topic, message, routing_key)
+        publisher.publish(topic, message, routing_key, exchange_type, reply_to)
 
     def create_consumer(self, consumer_data: ConsumerData):
         if consumer_data.handler:

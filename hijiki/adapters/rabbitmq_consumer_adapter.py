@@ -15,34 +15,50 @@ class ConsumerRabbitMQAdapter(RabbitMQAdapter):
         self.auto_ack = consumer_data.auto_ack
         self.routing_key = consumer_data.routing_key if consumer_data.routing_key else "*"
         self._consumer_thread = None
+        self.queue_type = consumer_data.queue_type
+        self.exchange_type = consumer_data.exchange_type
         self.create_dlq = consumer_data.create_dlq
+        self.dlq_name = consumer_data.dlq_name
+        self.dlx_name = consumer_data.dlx_name
+        self.custom_queue_args = consumer_data.custom_queue_args
 
 
     def create_exchange_and_queue(self):
         channel = self.get_channel()
-        queue_args = {
-            "x-queue-type": "quorum",
-            "x-delivery-limit": 10
-        }
-        if self.create_dlq:
-            dlq_exchange = f"{self.queue}_dlq_event" if not self.queue.endswith("_dlq") else f"{self.queue}_event"
-            dlq_queue = f"{self.queue}_dlq" if not self.queue.endswith("_dlq") else self.queue
+        default_queue_args = { "x-delivery-limit": 10 }
+        default_queue_type = "quorum"
+        queue_args = (
+            self.custom_queue_args
+            if self.custom_queue_args is not None
+            else default_queue_args
+        )
+        queue_args["x-queue-type"] = self.queue_type or default_queue_type
 
-            channel.exchange_declare(exchange=dlq_exchange, exchange_type="topic", durable=True)
+        default_exchange_type = "topic"
+        exchange_type = self.exchange_type or default_exchange_type
+
+        if self.create_dlq:
+            if self.dlq_name:
+                dlq_queue = self.dlq_name
+            else:
+                dlq_queue = f"{self.queue}_dlq" if not self.queue.endswith("_dlq") else self.queue
+
+            if self.dlx_name:
+                dlq_exchange = self.dlx_name
+            else:
+                dlq_exchange = f"{self.queue}_dlq_event" if not self.queue.endswith("_dlq") else f"{self.queue}_event"
+
+            channel.exchange_declare(exchange=dlq_exchange, exchange_type=exchange_type, durable=True)
             channel.queue_declare(queue=dlq_queue, durable=True, arguments=queue_args)
             channel.queue_bind(queue=dlq_queue, exchange=dlq_exchange, routing_key=self.routing_key)
 
-            queue_args = {
-                "x-queue-type": "quorum",
-                "x-dead-letter-exchange": dlq_exchange,
-                "x-delivery-limit": 10
-            }
+            queue_args["x-dead-letter-exchange"] = dlq_exchange
             channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
         else:
             channel.queue_declare(queue=self.queue, durable=True, arguments=queue_args)
 
         if self.topic:
-            channel.exchange_declare(exchange=self.topic, exchange_type='topic', durable=True)
+            channel.exchange_declare(exchange=self.topic, exchange_type=exchange_type, durable=True)
             channel.queue_bind(queue=self.queue, exchange=self.topic, routing_key=self.routing_key)
 
     def _consume(self):

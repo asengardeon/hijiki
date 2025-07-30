@@ -22,12 +22,14 @@ class MessageManagerBuilder:
         broker_config = BrokerConfig()
         self.host = broker_config.get_host()
         self.port = broker_config.get_port()
+        self.virtual_host = None
         self.user = broker_config.get_user()
         self.password = broker_config.get_password()
         self.cluster_hosts = broker_config.get_cluster_hosts()
         self.consumers_data = []
         self.broker_type = BrokerType.RABBITMQ
         self.heartbeat_interval = 60 # 60 é o tempo, em segundos, padrão do RabbitMQ desde a versão 3.3.5
+        self.use_secure_protocol = False
         self.manager = None
         MessageManagerBuilder._instance = self
         self.possible_consumers = []  # Lista de consumidores via decorator que podem ser registrados posteriormente.
@@ -44,6 +46,10 @@ class MessageManagerBuilder:
 
     def with_port(self, port: int):
         self.port = port
+        return self
+
+    def with_virtual_host(self, virtual_host: str):
+        self.virtual_host = virtual_host
         return self
 
     def with_user(self, user: str):
@@ -70,6 +76,10 @@ class MessageManagerBuilder:
         self.heartbeat_interval = heartbeat_interval
         return self
 
+    def with_secure_protocol(self, use_secure_protocol: bool):
+        self.use_secure_protocol = use_secure_protocol
+        return self
+
     def add_possible_consumer(self, consumer_data: ConsumerData):
         self.possible_consumers.append(consumer_data)
 
@@ -77,7 +87,7 @@ class MessageManagerBuilder:
         extra_params = {
             'heartbeat': self.heartbeat_interval
         }
-        connection_params = ConnectionParameters(self.host, self.port, self.user, self.password, self.cluster_hosts, extra_connection_params=extra_params)
+        connection_params = ConnectionParameters(self.host, self.port, self.virtual_host, self.user, self.password, self.cluster_hosts, self.use_secure_protocol, extra_connection_params=extra_params)
         broker = RabbitMQBroker(connection_params) if self.broker_type == BrokerType.RABBITMQ else None
         if not broker:
             raise ValueError("BrokerType inválido ou não suportado.")
