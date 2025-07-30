@@ -17,14 +17,10 @@ class PublisherRabbitMQAdapter(RabbitMQAdapter):
         channel = self.get_channel()
         channel.exchange_declare(exchange=topic, exchange_type=exchange_type, durable=True)
 
-        properties_kwargs = { "delivery_mode": 2 }
-        if reply_to:
-            properties_kwargs["reply_to"] = reply_to
-
         channel.basic_publish(
             exchange=topic,
             routing_key=routing_key,
             body=message,
-            properties=pika.BasicProperties(**properties_kwargs)
+            properties=pika.BasicProperties(delivery_mode=2, reply_to=reply_to)
         )
         logging.info(f"Mensagem enviada para o tópico {topic}: {message}")
