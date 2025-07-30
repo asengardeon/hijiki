@@ -24,3 +24,15 @@ class TestConsumerData(unittest.TestCase):
         self.assertEqual(consumer_data.topic, "test_topic")
         self.assertEqual(consumer_data.routing_key, "specific_routing_key")
         self.assertTrue(consumer_data.create_dlq)
+
+    def test_consumer_data_with_custom_queue_related_parameters(self):
+        handler_mock = Mock()
+        consumer_data = ConsumerData("test.queue", "test.exch", handler_mock, queue_type="classic",
+                                     exchange_type="direct", dlq_name="test.dlq", dlx_name="test.dlx")
+
+        self.assertEqual(consumer_data.queue, "test.queue")
+        self.assertEqual(consumer_data.topic, "test.exch")
+        self.assertEqual(consumer_data.queue_type, "classic")
+        self.assertEqual(consumer_data.exchange_type, "direct")
+        self.assertEqual(consumer_data.dlq_name, "test.dlq")
+        self.assertEqual(consumer_data.dlx_name, "test.dlx")

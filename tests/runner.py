@@ -53,6 +53,18 @@ class Runner():
             result_data_list.append(data)
             result_event_list.append('received event')
 
+        @consumer_handler(queue_name="with.custom.dl.names", topic='with.custom.dl.names.event',
+                         dlq_name="test.dlq", dlx_name="test.dlx")
+        def internal_consumer(data):
+            print(f"consumiu o valor:{data}")
+            result_event_list.append('received event')
+            raise Exception("falhou")
+
+        @consumer_handler(queue_name="test.dlq", topic="test.dlx", create_dlq=False)
+        def internal_consumer_erro(data):
+            print(f"consumiu o valor:{data}")
+            result_event_list_dlq.append('received event')
+
         self.gr = (MessageManagerBuilder.get_instance()\
             .with_user("user")\
             .with_password("pwd")\
