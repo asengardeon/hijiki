@@ -25,7 +25,13 @@ class TestMessageManager(unittest.TestCase):
         topic = "test_topic"
         message = "test_message"
         self.manager.publish(topic, message)
-        self.broker_mock.publish.assert_called_with(topic, json.dumps({'value': 'test_message'}), 'x')
+        self.broker_mock.publish.assert_called_with(
+            topic,
+            json.dumps({'value': 'test_message'}),
+            'x',
+            'topic',
+            None
+        )
 
     def test_consume_a_message_with_other_mapper(self):
         event_name = 'teste1_event'
@@ -34,7 +40,9 @@ class TestMessageManager(unittest.TestCase):
         self.broker_mock.publish.assert_called_with(
             event_name,
             json.dumps(_other_message_mapper(event_name, message)),  # <- Aqui!
-            'x'
+            'x',
+            'topic',
+            None
         )
 
     def test_create_consumer(self):
@@ -51,7 +59,12 @@ class TestMessageManager(unittest.TestCase):
         self.broker_mock.start_consuming.assert_called()
 
     def test_stop_consuming_rabbitmq_running_consumer(self):
-        connection_params = ConnectionParameters("localhost", 5672, "user", "pwd")
+        connection_params = ConnectionParameters(
+            host="localhost",
+            port=5672,
+            user="user",
+            password="pwd"
+        )
         actual_broker = RabbitMQBroker(connection_params)
         manager = MessageManager(actual_broker)
 

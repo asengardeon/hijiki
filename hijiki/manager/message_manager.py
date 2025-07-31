@@ -20,13 +20,13 @@ class MessageManager:
         self.possible_consumers = []
 
     def publish(self, topic: str, message: str, message_mapper: Optional[Callable[[str, str], dict]]=default_message_mapper,
-                        routing_key=default_routing_key):
+                routing_key=default_routing_key, exchange_type: Optional[str] = "topic", reply_to: Optional[str] = None):
         if message_mapper:
             payload = message_mapper(topic, message)
         else:
             payload = default_message_mapper(topic, message)
         new_message = json.dumps(payload)
-        self.broker.publish(topic, new_message, routing_key)
+        self.broker.publish(topic, new_message, routing_key, exchange_type, reply_to)
         logging.info(f"Mensagem publicada no tópico {topic}: {message}")
 
     def create_consumer(self, consumer_data: ConsumerData):

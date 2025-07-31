@@ -24,8 +24,8 @@ class TestPublisherConsumer(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if cls.test_count != 8:
-            raise Exception(f"Expected 8 tests, but found {cls.test_count}. Please check the test cases.")
+        if cls.test_count != 10:
+            raise Exception(f"Expected 10 tests, but found {cls.test_count}. Please check the test cases.")
 
     def tearDown(self):
         self.runner.clear_results()
@@ -119,4 +119,26 @@ class TestPublisherConsumer(unittest.TestCase):
         print(self.runner.get_result_for_specific_routing_key())
         self.assertEqual(1, len(self.runner.get_result_for_specific_routing_key()))
         self.assertEqual(3, len(self.runner.get_results_data())) # são tres mensagens, pois a fila teste1_event recebe dois por causa do routing key coring "*"
+        TestPublisherConsumer.test_count += 1
+
+    def test_consume_a_message_with_custom_exchange_and_queue_type(self):
+        self.runner.clear_results()
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.runner.publish_message('with_direct_exchange_event', '{"value": "This is the message"}',
+                                    routing_key='direct_routing_key', exchange_type='direct')
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(1, len(self.runner.get_results_data()))
+        TestPublisherConsumer.test_count += 1
+
+    def test_consume_a_message_with_custom_dead_letter_names(self):
+        self.runner.clear_results()
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        for number in range(self.NUMBER_OF_QUEUED_MESSAGES):
+            self.runner.publish_message(
+                'with.custom.dl.names.event',
+                f'{{"value": "This is message number {number} that will be sent to dlq"}}'
+            )
+
+        time.sleep(SECS_TO_AWAIT_BROKER)
+        self.assertEqual(self.NUMBER_OF_QUEUED_MESSAGES, len(self.runner.get_results_dlq()))
         TestPublisherConsumer.test_count += 1
