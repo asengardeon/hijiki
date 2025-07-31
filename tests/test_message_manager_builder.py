@@ -56,6 +56,20 @@ class TestMessageManagerBuilder(unittest.TestCase):
 
     @patch("hijiki.adapters.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
     @patch("hijiki.connection.rabbitmq_connection.ConnectionParameters", spec=True)
+    def test_with_virtual_host_uses_virtual_host_in_connection_params(self, mock_connection_params, mock_adapter):
+        mock_adapter.return_value = Mock()
+        mock_connection_params.return_value = Mock()
+
+        builder = (
+            MessageManagerBuilder.get_instance()
+            .with_virtual_host("virtual_host")
+        )
+        manager = builder.build()
+
+        self.assertEqual(mock_connection_params.call_args[1]["virtual_host"], "virtual_host")
+
+    @patch("hijiki.adapters.rabbitmq_adapter.RabbitMQAdapter", autospec=True)
+    @patch("hijiki.connection.rabbitmq_connection.ConnectionParameters", spec=True)
     def test_recreate_builder_creates_new_instance_and_allows_new_manager_creation(self, mock_connection_params, mock_adapter):
         mock_adapter.return_value = Mock()
         mock_connection_params.return_value = Mock()

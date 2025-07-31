@@ -44,8 +44,7 @@ A seguir, um resumo técnico dos principais métodos empregados para utilizar a 
 
 A configuração é feita via padrão builder, permitindo customização das conexões e parâmetros:
 
-```
-python
+```python
 manager = (
     MessageManagerBuilder()
     .with_host("localhost")
@@ -55,8 +54,6 @@ manager = (
     # outras opções, como troca do broker, etc.
     .build()
 )
-
-
 ```
 
 - **with_host(host: str)**: define o endereço do broker RabbitMQ.
@@ -77,8 +74,7 @@ Além dessas informações obrigatórias, o `ConsumerData` permite a customizaç
 
 O método **create_consumer** adiciona consumidores ao manager:
 
-```
-python
+```python
 def process_message(msg):
     print(f"Mensagem recebida: {msg}")
 
@@ -93,7 +89,7 @@ Você também pode usar o decorator `@consumer_handler` para registrar consumido
 
 ### Modelo apenas determinando a fila
 
-```
+```python
 @consumer_handler(queue_name="teste1")
     def internal_consumer(data):
         print(f"consumiu o valor:{data}")
@@ -103,7 +99,7 @@ Você também pode usar o decorator `@consumer_handler` para registrar consumido
 
 ### Modelo determinando fila e que não cria fila DLQ automaticamente, aconselhado para consumidores dde filas DLQ
 
-```
+```python
     @consumer_handler(queue_name="teste1_dlq", create_dlq=False)
     def internal_consumer_dlq(data):
         print(f"consumiu o valor:{data}")
@@ -112,7 +108,7 @@ Você também pode usar o decorator `@consumer_handler` para registrar consumido
 
 ### Modelo determinando fila e tópico
 
-```
+```python
     @consumer_handler(queue_name="fila_erro", topic="erro_event")
     def internal_consumer_erro(data):
         print(f"consumiu o valor:{data}")
@@ -122,7 +118,7 @@ Você também pode usar o decorator `@consumer_handler` para registrar consumido
 
 ### Modelos com uso de routing_key
 
-```
+```python
     @consumer_handler(queue_name="teste_with_specific_routing_key", topic='teste1_event',
                       routing_key="specific_routing_key")
     def internal_consumer(data):
@@ -135,8 +131,7 @@ Você também pode usar o decorator `@consumer_handler` para registrar consumido
 
 O método **start_consuming** inicia loops de consumo das filas para todos consumidores registrados:
 
-```
-python
+```python
 manager.start_consuming()
 ```
 
@@ -146,8 +141,7 @@ manager.start_consuming()
 
 O método **publish** envia mensagens diretamente para a fila/ tópico definido:
 
-```
-python
+```python
 manager.publish("nome_da_fila", "Conteúdo da mensagem")
 ```
 
