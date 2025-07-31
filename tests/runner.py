@@ -69,7 +69,9 @@ class Runner():
             .with_user("user")\
             .with_password("pwd")\
             .with_host("localhost")\
-            .with_port(5672)
+            .with_port(5672)\
+            .with_secure_protocol(False)\
+            .with_virtual_host("/")\
             .build())
         self.threads = []
 
