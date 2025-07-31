@@ -57,7 +57,7 @@ jobs:
     - name: generate xml coverage
       run: pipenv run python -m coverage xml
     - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 #    - name: Stop containers

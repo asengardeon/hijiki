@@ -64,7 +64,7 @@ jobs:
       run: |
         pipenv run python setup.py sdist bdist_wheel
     - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
     - name: Stop containers
