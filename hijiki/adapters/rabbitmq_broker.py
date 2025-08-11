@@ -6,7 +6,7 @@ from hijiki.config.consumer_data import ConsumerData
 from hijiki.ports.message_broker import MessageBroker
 from hijiki.adapters.rabbitmq_consumer_adapter import ConsumerRabbitMQAdapter
 from hijiki.adapters.rabbitmq_publisher_adapter import PublisherRabbitMQAdapter
-
+from hijiki.connection.rabbitmq_connection import RabbitMQConnection
 
 class RabbitMQBroker(MessageBroker):
     def __init__(self, connection_params):
@@ -37,6 +37,16 @@ class RabbitMQBroker(MessageBroker):
             consumer.consume()
 
     def ping(self):
+        if not self.publisher and not len(self.consumers.values()):
+            try:
+                connection = RabbitMQConnection(self.connection_params)
+                conn = connection.connect()
+                conn.close()
+                return True
+            except Exception as e:
+                logging.error(f"RabbitMQ ping failed: {e}")
+                return False
+
         result = True
         for consumer in self.consumers.values():
             result = result and consumer.ping()
