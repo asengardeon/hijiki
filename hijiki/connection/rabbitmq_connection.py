@@ -1,8 +1,9 @@
 import logging
+from random import shuffle
 from urllib.parse import quote
 
 import pika
-from typing import Optional
+from typing import Optional, List
 
 from hijiki.config.broker_config import BrokerConfig
 
@@ -45,7 +46,7 @@ class RabbitMQConnection:
            result += f"{key}={value}&"
         return result[:-1]  # Remove o último '&'
 
-    def get_broker_url(self) -> str:
+    def get_broker_url(self) -> List[str]:
         self.__validate_host()
         """Gera a URL de conexão para o broker."""
         url_connectio_params = self._get_connecttion_url_params()
@@ -53,14 +54,16 @@ class RabbitMQConnection:
         if self.cluster_hosts:
             cluster = self.cluster_hosts.split(",")
             urls = [f"{protocol}://{self.user}:{self.password}@{host}{self.virtual_host}{url_connectio_params}" for host in cluster]
-            return ";".join(urls)
+            return urls
         else:
-            return f"{protocol}://{self.user}:{self.password}@{self.host}:{self.port}{self.virtual_host}{url_connectio_params}"
+            return [f"{protocol}://{self.user}:{self.password}@{self.host}:{self.port}{self.virtual_host}{url_connectio_params}"]
 
     def connect(self):
         broker_url = self.get_broker_url()
-        logging.info(f"Conectando ao RabbitMQ com a URL: {broker_url}")
-        self.connection = pika.BlockingConnection(pika.URLParameters(broker_url))
+        params = [pika.URLParameters(url) for  url in broker_url]
+        shuffle(params)
+        logging.info(f"Conectando ao RabbitMQ com a URL: {params}")
+        self.connection = pika.BlockingConnection(params)
         logging.info("Conectado ao RabbitMQ")
         return self.connection
 

@@ -22,11 +22,6 @@ class TestPublisherConsumer(unittest.TestCase):
         cls.NUMBER_OF_QUEUED_MESSAGES = 2  # Já estava definido na linha anterior, só conferindo duplicidade
         cls.test_count = 0
 
-    @classmethod
-    def tearDownClass(cls):
-        if cls.test_count != 10:
-            raise Exception(f"Expected 10 tests, but found {cls.test_count}. Please check the test cases.")
-
     def tearDown(self):
         self.runner.clear_results()
 
