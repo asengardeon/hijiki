@@ -27,13 +27,13 @@ class TestRabbitMQConnection(unittest.TestCase):
     def test_get_broker_url_from_env(self):
         os.environ.pop('BROKER_CLUSTER_SERVER')  # Garantir que apenas BROKER_SERVER está definido
         connection = RabbitMQConnection()
-        expected_url = 'amqp://env_user:env_password@env_host:5673'
+        expected_url = ['amqp://env_user:env_password@env_host:5673']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_from_env_with_cluster(self):
         os.environ.pop('BROKER_SERVER')  # Garantir que apenas BROKER_CLUSTER_SERVER está definido
         connection = RabbitMQConnection()
-        expected_url = 'amqp://env_user:env_password@env_host1;amqp://env_user:env_password@env_host2'
+        expected_url = ['amqp://env_user:env_password@env_host1','amqp://env_user:env_password@env_host2']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_from_builder(self):
@@ -41,7 +41,7 @@ class TestRabbitMQConnection(unittest.TestCase):
         connection_parameters = ConnectionParameters(host='builder_host', port=5674, user='builder_user',
                            password='builder_password')
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://builder_user:builder_password@builder_host:5674'
+        expected_url = ['amqp://builder_user:builder_password@builder_host:5674']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_from_builder_with_cluster(self):
@@ -49,7 +49,7 @@ class TestRabbitMQConnection(unittest.TestCase):
         connection_parameters = ConnectionParameters(host=None, port=None, user=None, password=None,
                                         cluster_hosts='builder_host1,builder_host2')
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://env_user:env_password@builder_host1;amqp://env_user:env_password@builder_host2'
+        expected_url = ['amqp://env_user:env_password@builder_host1','amqp://env_user:env_password@builder_host2']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_from_builder_with_cluster_and_heartbeat(self):
@@ -57,7 +57,7 @@ class TestRabbitMQConnection(unittest.TestCase):
         connection_parameters = ConnectionParameters(host=None, port=None, user=None, password=None,
                                         cluster_hosts='builder_host1,builder_host2', extra_connection_params={"heartbeat":36})
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://env_user:env_password@builder_host1?heartbeat=36;amqp://env_user:env_password@builder_host2?heartbeat=36'
+        expected_url = ['amqp://env_user:env_password@builder_host1?heartbeat=36','amqp://env_user:env_password@builder_host2?heartbeat=36']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_from_builder_with_heartbeat(self):
@@ -65,35 +65,35 @@ class TestRabbitMQConnection(unittest.TestCase):
         connection_parameters = ConnectionParameters(host='builder_host', port=5674, user='builder_user',
                            password='builder_password', extra_connection_params={"heartbeat":37})
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://builder_user:builder_password@builder_host:5674?heartbeat=37'
+        expected_url = ['amqp://builder_user:builder_password@builder_host:5674?heartbeat=37']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_with_virtual_host(self):
         os.environ.pop('BROKER_CLUSTER_SERVER')
         connection_parameters = ConnectionParameters(virtual_host='builder_virtual_host')
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://env_user:env_password@env_host:5673/builder_virtual_host'
+        expected_url = ['amqp://env_user:env_password@env_host:5673/builder_virtual_host']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_with_properly_uri_encoded_virtual_host(self):
         os.environ.pop('BROKER_CLUSTER_SERVER')
         connection_parameters = ConnectionParameters(virtual_host='/')
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://env_user:env_password@env_host:5673/%2F'
+        expected_url = ['amqp://env_user:env_password@env_host:5673/%2F']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_with_virtual_host_and_heartbeat(self):
         os.environ.pop('BROKER_CLUSTER_SERVER')
         connection_parameters = ConnectionParameters(virtual_host='builder_virtual_host', extra_connection_params={"heartbeat":37})
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://env_user:env_password@env_host:5673/builder_virtual_host?heartbeat=37'
+        expected_url = ['amqp://env_user:env_password@env_host:5673/builder_virtual_host?heartbeat=37']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_with_virtual_host_and_cluster(self):
         os.environ.pop('BROKER_SERVER')
         connection_parameters = ConnectionParameters(virtual_host='builder_virtual_host', cluster_hosts='builder_host1,builder_host2')
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://env_user:env_password@builder_host1/builder_virtual_host;amqp://env_user:env_password@builder_host2/builder_virtual_host'
+        expected_url = ['amqp://env_user:env_password@builder_host1/builder_virtual_host','amqp://env_user:env_password@builder_host2/builder_virtual_host']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_with_virtual_host_and_cluster_and_heartbeat(self):
@@ -101,19 +101,19 @@ class TestRabbitMQConnection(unittest.TestCase):
         connection_parameters = ConnectionParameters(virtual_host='builder_virtual_host', cluster_hosts='builder_host1,builder_host2',
                                                      extra_connection_params={"heartbeat":37})
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqp://env_user:env_password@builder_host1/builder_virtual_host?heartbeat=37;amqp://env_user:env_password@builder_host2/builder_virtual_host?heartbeat=37'
+        expected_url = ['amqp://env_user:env_password@builder_host1/builder_virtual_host?heartbeat=37','amqp://env_user:env_password@builder_host2/builder_virtual_host?heartbeat=37']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_with_secure_protocol(self):
         os.environ.pop('BROKER_CLUSTER_SERVER')
         connection_parameters = ConnectionParameters(use_secure_protocol=True)
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqps://env_user:env_password@env_host:5673'
+        expected_url = ['amqps://env_user:env_password@env_host:5673']
         self.assertEqual(connection.get_broker_url(), expected_url)
 
     def test_get_broker_url_with_secure_protocol_and_cluster(self):
         os.environ.pop('BROKER_SERVER')
         connection_parameters = ConnectionParameters(use_secure_protocol=True, cluster_hosts='builder_host1,builder_host2')
         connection = RabbitMQConnection(connection_parameters)
-        expected_url = 'amqps://env_user:env_password@builder_host1;amqps://env_user:env_password@builder_host2'
+        expected_url = ['amqps://env_user:env_password@builder_host1','amqps://env_user:env_password@builder_host2']
         self.assertEqual(connection.get_broker_url(), expected_url)
