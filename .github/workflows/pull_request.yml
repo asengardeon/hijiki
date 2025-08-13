@@ -51,7 +51,7 @@ jobs:
       run: | 
         ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
         echo "Waiting for RabbitMQ to start..."
-        sleep 10 # wait for RabbitMQ to start
+        sleep 30 # wait for RabbitMQ to start
     - name: Run tests
       run: pipenv run python -m coverage run -m unittest tests/test_publisher_consumer_test.py
     - name: generate xml coverage
