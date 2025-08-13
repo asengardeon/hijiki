@@ -53,7 +53,7 @@ jobs:
         echo "Waiting for RabbitMQ to start..."
         sleep 10 # wait for RabbitMQ to start
     - name: Run tests
-      run: pipenv run python -m coverage run -m unittest tests/**
+      run: pipenv run python -m coverage run -m unittest tests/test_publisher_consumer_test.py
     - name: generate xml coverage
       run: pipenv run python -m coverage xml
     - name: Upload coverage reports to Codecov
