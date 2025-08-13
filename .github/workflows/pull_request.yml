@@ -20,7 +20,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: 3.x
+        python-version: 3.9
     - name: Install pipenv
       run: |
         pip install pipenv
@@ -51,9 +51,9 @@ jobs:
       run: | 
         ~/.docker/cli-plugins/docker-compose -f "docker-compose.yml" up -d --force-recreate
         echo "Waiting for RabbitMQ to start..."
-        sleep 10 # wait for RabbitMQ to start
+        sleep 30 # wait for RabbitMQ to start
     - name: Run tests
-      run: pipenv run python -m coverage run -m unittest tests/**
+      run: pipenv run python -m coverage run -m unittest tests/*
     - name: generate xml coverage
       run: pipenv run python -m coverage xml
     - name: Upload coverage reports to Codecov
