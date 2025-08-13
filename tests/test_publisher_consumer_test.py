@@ -25,6 +25,9 @@ class TestPublisherConsumer(unittest.TestCase):
     def tearDown(self):
         self.runner.clear_results()
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.runner.stop()
 
     def test_publish_a_message(self):
         self.runner.clear_results()
