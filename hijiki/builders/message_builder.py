@@ -43,4 +43,4 @@ class MessageBuilder:
             value=self._value,
             context=self._context,
             extra_data=self._extra_data
-        ).model_dump_json(exclude_none=True)
+        ).to_json()
