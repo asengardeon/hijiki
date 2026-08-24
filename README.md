@@ -1,255 +1,207 @@
-# HIJIKI - Gerenciamento de Mensagens com RabbitMQ
+# Hijiki
 
-## 📚 Sobre a biblioteca HIJIKI
+> Event-driven messaging for RabbitMQ, without the boilerplate.
 
-### Versão 2
+[![PyPI](https://img.shields.io/pypi/v/hijiki)](https://pypi.org/project/hijiki/)
+[![Python](https://img.shields.io/pypi/pyversions/hijiki)](https://pypi.org/project/hijiki/)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue)](LICENSE)
 
-Este documento descreve a biblioteca **HIJIKI** versão 2, que é uma evolução da versão 1, mantendo compatibilidade com o código existente. A versão 2 introduz melhorias significativas na estrutura e funcionalidade, mas não altera a API pública, garantindo que os usuários possam migrar facilmente sem necessidade de ajustes no código já implementado.
-para acesso a versão 1, consulte a documentação da [versão 1](README_v1.md) e para fontes a tag v1_latest
+🇧🇷 [Leia em português](README.pt-BR.md) · 📄 [v1 documentation](README_v1.md)
 
-HIJIKI é uma biblioteca Python de alto nível para gerenciamento de mensagens orientada a eventos, destinada a facilitar a criação, configuração e uso de consumidores e produtores de mensagens, principalmente utilizando **RabbitMQ** como broker. Seu objetivo é abstrair detalhes de implementação de fila e troca de mensagens, oferecendo uma interface intuitiva, flexível e adequada tanto para aplicações web quanto scripts standalone.
+Hijiki is a high-level Python library for event-driven messaging on RabbitMQ. It
+abstracts exchange declaration, queue binding, dead-letter queues and consumer
+lifecycle behind a declarative API.
 
-**Principais Características:**
+## Why
 
-- **Builder pattern** para configuração (`MessageManagerBuilder`), facilitando setup e customizações complexas.
-- **Gerenciamento simplificado de consumidores**: registre consumidores (filas, tópicos e handlers) rapidamente usando uma API intuitiva.
-- **Publicação fácil de mensagens**: uso direto de métodos para publicar em tópicos/fila, com suporte a mapeamento customizado de payloads.
-- **Suporte a múltiplos brokers**: arquitetura pronta para suporte a outros brokers, embora os exemplos estejam focados em RabbitMQ.
-- **Extensível**: pode ser integrada a decorators e middlewares para aplicações async/web como FastAPI ou scripts tradicionais.
-- **Métodos utilitários** para manutenção do ciclo de vida do consumo, verificação de saúde (`is_alive`), troca dinâmica do broker, e registro em execução.
+Every service in an event-driven architecture repeats the same setup: declare the
+exchange, bind the queue, wire the dead-letter queue, keep the consumer alive.
+Hijiki collapses that into a decorator — and creates the DLQ for you by default,
+so resilience is the default rather than an extra step.
 
-**Principais Classes:**
-
-- `MessageManagerBuilder`: Classe principal para construir e configurar a stack.
-- `MessageManager`: Gerencia operações de envio e consumo de mensagens.
-- `ConsumerData`: Estrutura que associa uma fila, tópico e função handler.
-
----
-
-## 📦 Instalação
-
-Clone este repositório e instale as dependências:
+## Install
 
 ```shell
-git clone https://github.com/asengardeon/hijiki.git
-cd hijiki
-pipenv  install
+pip install hijiki
 ```
 
-## ⚙️ Detalhamento técnico dos métodos de uso
-
-A seguir, um resumo técnico dos principais métodos empregados para utilizar a biblioteca HIJIKI na prática:
-
-## 1. Criação e configuração do Manager
-
-A configuração é feita via padrão builder, permitindo customização das conexões e parâmetros:
+## Quick start
 
 ```python
+from hijiki import MessageManagerBuilder, consumer_handler
+
 manager = (
     MessageManagerBuilder()
     .with_host("localhost")
     .with_port(5672)
     .with_user("user")
     .with_password("pwd")
-    # outras opções, como troca do broker, etc.
     .build()
 )
+
+@consumer_handler(queue_name="orders")
+def handle_order(data):
+    print(f"received: {data}")
+
+manager.start_consuming()
 ```
 
-- **with_host(host: str)**: define o endereço do broker RabbitMQ.
-- **with_port(port: int)**: configura a porta de conexão.
-- **with_user(user: str), with_password(password: str)**: definem credenciais.
-- **with_cluster_hosts(cluster_hosts: str)**: define o endereço caso você precise se conectar a uma instância de múltiplos clusters.
-- **with_virtual_host(virtual_host: str)**: define a qual virtual host de uma instância a conexão é feita
-- **with_secure_protocol(use_secure_protocol: bool)**: define o uso ou não do protocolo `amqps` em vez do `amqp`, que é usado por padrão
-- **build()**: instancia e retorna o manager, pronto para uso.
+That is the whole setup. The queue, its exchange and its dead-letter queue are
+created automatically.
 
-## 2. Registro de consumidores
+A `docker-compose.yml` is included in this repository if you need a local
+RabbitMQ to try it against.
 
-### Criando consumidor manualmente
+## Configuration
 
-É preciso criar uma instância de `ConsumerData` associando uma fila, tópico e função de processamento.
+Connections are configured with a builder:
 
-Além dessas informações obrigatórias, o `ConsumerData` permite a customização de outros tipos de parâmetros. Por exemplo, caso você precise consumir filas e exchanges de uma instância que não esteja utilizando os parâmetros padrões usados por esta lib, como os tipos das filas e exchanges, é possível passar os tipos por meio dos parâmetros `queue_type` e `exchange_type` durante a instanciação da `ConsumerData`.
+| Method | Purpose |
+|---|---|
+| `with_host(host: str)` | RabbitMQ broker address |
+| `with_port(port: int)` | Connection port |
+| `with_user(user: str)` | Username |
+| `with_password(password: str)` | Password |
+| `with_cluster_hosts(cluster_hosts: str)` | Connect to a multi-node cluster instance |
+| `with_virtual_host(virtual_host: str)` | Target a specific virtual host |
+| `with_secure_protocol(use_secure_protocol: bool)` | Use `amqps` instead of the default `amqp` |
+| `build()` | Returns the configured `MessageManager` |
 
-O método **create_consumer** adiciona consumidores ao manager:
+## Consumers
+
+### Using the decorator
+
+Queue only — topic and DLQ are derived automatically:
 
 ```python
+@consumer_handler(queue_name="orders")
+def handle_order(data):
+    print(f"received: {data}")
+```
+
+Explicit queue and topic:
+
+```python
+@consumer_handler(queue_name="orders_error", topic="error_event")
+def handle_error(data):
+    print(f"received: {data}")
+```
+
+With a routing key:
+
+```python
+@consumer_handler(
+    queue_name="orders_specific",
+    topic="order_event",
+    routing_key="specific_routing_key",
+)
+def handle_specific(data):
+    print(f"received: {data}")
+```
+
+Consuming a dead-letter queue itself — disable DLQ creation so you do not get a
+DLQ for your DLQ:
+
+```python
+@consumer_handler(queue_name="orders_dlq", create_dlq=False)
+def handle_dlq(data):
+    print(f"received: {data}")
+```
+
+### Registering manually
+
+`ConsumerData` binds a queue, a topic and a handler:
+
+```python
+from hijiki import ConsumerData
+
 def process_message(msg):
-    print(f"Mensagem recebida: {msg}")
+    print(f"received: {msg}")
 
-consumer_data = ConsumerData("nome_da_fila", "nome_do_topico", process_message)
-manager.create_consumer(consumer_data)
+consumer = ConsumerData("queue_name", "topic_name", process_message)
+manager.create_consumer(consumer)
 ```
 
-- O handler (função) será chamada a cada mensagem recebida nessa fila/tópico.
+`ConsumerData` also accepts `queue_type` and `exchange_type` when you need to
+consume from queues and exchanges that do not follow this library's defaults.
 
-##Criando consumidor com decorator
-Você também pode usar o decorator `@consumer_handler` para registrar consumidores de forma mais simples:
-
-### Modelo apenas determinando a fila
-
-```python
-@consumer_handler(queue_name="teste1")
-    def internal_consumer(data):
-        print(f"consumiu o valor:{data}")
-        result_data_list.append(data)
-        result_event_list.append('received event')
-```
-
-### Modelo determinando fila e que não cria fila DLQ automaticamente, aconselhado para consumidores dde filas DLQ
-
-```python
-    @consumer_handler(queue_name="teste1_dlq", create_dlq=False)
-    def internal_consumer_dlq(data):
-        print(f"consumiu o valor:{data}")
-        result_event_list_dlq.append('received event')
-```
-
-### Modelo determinando fila e tópico
-
-```python
-    @consumer_handler(queue_name="fila_erro", topic="erro_event")
-    def internal_consumer_erro(data):
-        print(f"consumiu o valor:{data}")
-        result_event_list.append('received event')
-        raise Exception("falhou")
-```
-
-### Modelos com uso de routing_key
-
-```python
-    @consumer_handler(queue_name="teste_with_specific_routing_key", topic='teste1_event',
-                      routing_key="specific_routing_key")
-    def internal_consumer(data):
-        print(f"consumiu o valor:{data}")
-        result_data_list.append(data)
-        result_data_list_dlq_for_specific_routing_key.append('received event')
-```
-
-## 3. Início do consumo
-
-O método **start_consuming** inicia loops de consumo das filas para todos consumidores registrados:
+### Starting the consumers
 
 ```python
 manager.start_consuming()
 ```
 
-- No FastAPI, recomenda-se executar em thread separada para não bloquear o servidor.
-
-## 4. Publicação de mensagens
-
-O método **publish** envia mensagens diretamente para a fila/ tópico definido:
+## Publishing
 
 ```python
-manager.publish("nome_da_fila", "Conteúdo da mensagem")
+manager.publish("orders", "message content")
 ```
 
-Por padrão, a publicação das mensagens é feita seguindo o formato `{ "value": <conteúdo da mensagem> }`, para filas do tipo `topic`, sem `routing_key` e parâmetro `reply_to`. Todos estes podem ser customizados se seu caso de uso não se adequar a isso:
+By default the payload is published as `{"value": <content>}` to a `topic`
+exchange, with no routing key and no `reply_to`. All of that is customizable:
 
 ```python
-def custom_message_mapper(_topic: str, data: str):
-  return { "id": uuid(), "data": data }
+import uuid
+
+def custom_message_mapper(topic: str, data: str):
+    return {"id": str(uuid.uuid4()), "data": data}
 
 manager.publish(
-  "nome_da_fila",
-  "Conteúdo da mensagem",
-  message_mapper=custom_message_mapper
-  routing_key="my_routing_key",
-  reply_to="my_response_queue_name"
+    "orders",
+    "message content",
+    message_mapper=custom_message_mapper,
+    routing_key="my_routing_key",
+    reply_to="my_response_queue",
 )
 ```
 
-- Mensagens podem ser publicadas a partir de endpoints FastAPI ou scripts Python, conforme exemplo.
+## Using it with FastAPI
 
----
+Consumers run in a separate thread so they do not block the web server, and
+`is_alive()` gives you a liveness signal for health checks:
 
-## 📦 Pré-requisitos
+```python
+import threading
 
-- **RabbitMQ** rodando na máquina local (`localhost:5672`) ou disponível remotamente.
-- Dependências Python instaladas:
-  - `pipenv install` (na raiz do projeto)
-  - Bibliotecas necessárias: `pika`, `fastapi`, `uvicorn`, entre outras já incluídas no `Pipfile` do projeto.
+threading.Thread(target=manager.start_consuming, daemon=True).start()
 
----
+@app.get("/health")
+def health():
+    return {"messaging": manager.is_alive()}
+```
 
-## Estrutura dos Exemplos
+## Examples
 
-- [`fastapi_example.py`](./fastapi_example.py)  
-  Demonstra como criar endpoints FastAPI para publicar mensagens e inicializar consumidores utilizando HIJIKI.
+Two runnable examples live in [`examples/`](./examples):
 
-- [`pure_python_example.py`](./pure_python_example.py)  
-  Demonstra como publicar e consumir mensagens programaticamente, usando apenas Python puro, sem framework web.
+```shell
+# FastAPI: publish over HTTP, consume in a background thread
+uvicorn examples.fastapi_example:app --reload
 
----
+# Plain Python: publish and consume in a single script
+python examples/pure_python_example.py
+```
 
-## ▶️ Como executar os exemplos
+## Requirements
 
-### 1. Exemplo FastAPI
+- A reachable RabbitMQ instance (defaults to `localhost:5672`)
+- Python dependencies are installed automatically by `pip`
 
-#### **Passo a passo**
+## Also available for
 
-1. **Suba o RabbitMQ** em sua máquina local (padrão: usuário `user`, senha `pwd`, porta `5672`)  
-   Se usar outro usuário/senha/host, edite o exemplo conforme necessário.
+- **Node.js** → [hijiki-node](https://github.com/asengardeon/hijiki-node) ([npm](https://www.npmjs.com/package/hijiki))
 
-2. **Execute o servidor FastAPI**:
-   ```sh
-   uvicorn examples.fastapi_example:app --reload
-   ```
-3. **Interaja com a API**:
-   - Publique uma mensagem:
-     ```sh
-     curl -X POST "http://localhost:8000/publish/fastapi_queue" -H  "accept: application/json" -d "message=Olá do FastAPI"
-     ```
-   - Veja os consumidores recebendo mensagens no terminal onde o servidor está rodando (mensagens são exibidas via print).
+## Versioning
 
-#### **Observações**
+Version 2 is a structural evolution of version 1 and keeps the public API
+unchanged, so existing code migrates without adjustments. For version 1, see
+[README_v1.md](README_v1.md) and the `v1_latest` tag.
 
-- O consumidor é registrado e inicializado automaticamente ao subir o FastAPI.
-- O consumo roda em uma thread em paralelo ao servidor web.
+## Contributing
 
----
+Issues and pull requests are welcome. Open an issue to discuss larger changes
+before implementing them.
 
-### 2. Exemplo Python Puro
+## License
 
-#### **Passo a passo**
-
-1. **Suba o RabbitMQ** em sua máquina local (`localhost:5672`).
-
-2. **Execute o script**:
-
-   ```sh
-   python examples/pure_python_example.py
-   ```
-
-3. **Verifique a saída**:
-   - O script publica uma mensagem inicial, registra o consumidor e começa a consumir mensagens da fila `python_queue`.
-   - O consumidor imprime no console todas as mensagens recebidas.
-
-#### **Observações**
-
-- Use `Ctrl+C` para interromper o consumo.
-
----
-
-## 💡 Dicas e Customizações
-
-- Para consumir de outras filas ou alterar tópicos, edite os nomes nos exemplos.
-- Você pode registrar múltiplos consumidores, basta criar mais instâncias de `ConsumerData` e passar para `manager.create_consumer()`.
-- Troque usuário, senha ou porta caso sua instância RabbitMQ seja diferente.
-
----
-
-## 🛠️ Sobre a arquitetura utilizada
-
-- Os consumidores são instâncias de `ConsumerData`, que associam fila, tópico e função de processamento.
-- O método `manager.start_consuming()` inicia o consumo registrado para as filas configuradas.
-- O exemplo FastAPI utiliza um thread para que o consumo de mensagens ocorra junto do serviço web.
-
----
-
-## ❓ Dúvidas ou Sugestões?
-
-Abra uma issue no repositório principal do projeto, ou envie sugestões/contribuições!
-
----
+GPL-3.0 — see [LICENSE](LICENSE).
